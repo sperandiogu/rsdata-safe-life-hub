@@ -638,13 +638,13 @@ export function RSDataLanding() {
           {/* Mobile List Format */}
           <div className="md:hidden">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-200">
                 {/* Monthly Plan */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-[#575756]">{currentPlan.name} - Mensal</h3>
-                      <p className="text-sm text-gray-500">Flexibilidade total</p>
+                      <h3 className="font-semibold text-[#575756] text-lg">{currentPlan.name} - Mensal</h3>
+                      <p className="text-sm text-gray-500 mt-1">Flexibilidade total</p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-end">
@@ -656,7 +656,7 @@ export function RSDataLanding() {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-1 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm">
                       <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
                       <span className="text-[#575756]">{currentPlan.lives}</span>
@@ -681,14 +681,14 @@ export function RSDataLanding() {
                 </div>
 
                 {/* Annual Plan - Highlighted */}
-                <div className="p-4 bg-[#084D6C]/5 relative">
-                  <Badge className="absolute top-2 right-2 bg-[#084D6C] text-white px-2 py-1 text-xs">
+                <div className="p-6 bg-[#084D6C]/5 relative">
+                  <Badge className="absolute top-4 right-4 bg-[#084D6C] text-white px-2 py-1 text-xs">
                     Recomendado
                   </Badge>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-[#084D6C]">{currentPlan.name} - Anual</h3>
-                      <p className="text-sm text-[#084D6C]">
+                      <h3 className="font-semibold text-[#084D6C] text-lg">{currentPlan.name} - Anual</h3>
+                      <p className="text-sm text-[#084D6C] mt-1">
                         Economize R${(currentPlan.prices.anual.originalPrice! - currentPlan.prices.anual.price) * 12}/ano
                       </p>
                     </div>
@@ -707,7 +707,7 @@ export function RSDataLanding() {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-1 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm">
                       <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
                       <span className="text-[#575756]">{currentPlan.lives}</span>
@@ -731,11 +731,11 @@ export function RSDataLanding() {
                 </div>
 
                 {/* Semiannual Plan */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-[#575756]">{currentPlan.name} - Semestral</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-semibold text-[#575756] text-lg">{currentPlan.name} - Semestral</h3>
+                      <p className="text-sm text-gray-500 mt-1">
                         Economize R${(currentPlan.prices.semestral.originalPrice! - currentPlan.prices.semestral.price) * 6}/semestre
                       </p>
                     </div>
@@ -754,7 +754,7 @@ export function RSDataLanding() {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-1 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm">
                       <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
                       <span className="text-[#575756]">{currentPlan.lives}</span>
