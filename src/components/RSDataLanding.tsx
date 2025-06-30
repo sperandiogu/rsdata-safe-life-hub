@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { ArrowRight, Check, Star, Shield, Heart, Menu } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -94,9 +93,9 @@ export function RSDataLanding() {
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 97, originalPrice: null, link: "https://buy.stripe.com/4gM8wP0rw7NBgGO4fr9ws03" },
-        semestral: { price: 87, originalPrice: 97, link: "https://buy.stripe.com/4gM8wP0rw7NBgGO4fr9ws03" },
-        anual: { price: 77, originalPrice: 97, link: "https://buy.stripe.com/4gM8wP0rw7NBgGO4fr9ws03" },
+        mensal: { price: 104.9, originalPrice: null, link: "https://seguro.rsdata.com.br/b/aFaeVd8Y2ebZ62a27j9ws07"},
+        semestral: { price: 89.90, originalPrice: 104.9, link: "https://seguro.rsdata.com.br/b/5kQ28r3DI3xl3U2aDP9ws08"},
+        anual: { price: 77, originalPrice: 104.9, link: "https://seguro.rsdata.com.br/b/aFaaEX5LQebZgGO6nz9ws09" },
       },
     },
     premium: {
@@ -107,9 +106,9 @@ export function RSDataLanding() {
       storage: "5 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 499, originalPrice: null, link: "https://buy.stripe.com/cNi5kDdei9VJ62a8vH9ws02" },
-        semestral: { price: 449, originalPrice: 499, link: "https://buy.stripe.com/cNi5kDdei9VJ62a8vH9ws02" },
-        anual: { price: 399, originalPrice: 499, link: "https://buy.stripe.com/cNi5kDdei9VJ62a8vH9ws02" },
+        mensal: { price: 374.9, originalPrice: null, link: "https://seguro.rsdata.com.br/b/dRm9AT5LQ4Bp0HQcLX9ws0c"},
+        semestral: { price: 319.9, originalPrice: 374.9, link: "https://seguro.rsdata.com.br/b/28E5kDb6a5Ft62a5jv9ws0b"},
+        anual: { price: 277, originalPrice: 374.9, link: "https://seguro.rsdata.com.br/b/7sY4gz8Y20l9eyG27j9ws0a"},
       },
     },
     plus: {
@@ -120,9 +119,9 @@ export function RSDataLanding() {
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 385, originalPrice: null, link: "https://buy.stripe.com/7sY00j2zE2thaiq5jv9ws01" },
-        semestral: { price: 347, originalPrice: 385, link: "https://buy.stripe.com/7sY00j2zE2thaiq5jv9ws01" },
-        anual: { price: 308, originalPrice: 385, link: "https://buy.stripe.com/7sY00j2zE2thaiq5jv9ws01" },
+        mensal: { price: 239.9, originalPrice: null, link: "https://seguro.rsdata.com.br/b/28EaEXfmq8RF9emcLX9ws0e"},
+        semestral: { price: 203.9, originalPrice: 239.9, link: "https://seguro.rsdata.com.br/b/bJe9AT3DI2thgGO6nz9ws0f"},
+        anual: { price: 177, originalPrice: 239.8, link: "https://seguro.rsdata.com.br/b/5kQ8wPfmqd7V8ai9zL9ws0d"},
       },
     },
   };
