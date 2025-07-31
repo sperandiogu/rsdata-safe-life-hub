@@ -317,7 +317,7 @@ export function RSDataLanding() {
               <AnimateOnScroll animation="fade-down" delay={0.1}>
                 <Badge className="mb-4 bg-[#084D6C]/10 text-[#084D6C] hover:bg-[#084D6C]/10">
                   <Shield className="w-4 h-4 mr-1" />
-                  Saúde e Segurança do Trabalho
+                  Segurança e Saúde do Trabalho
                 </Badge>
               </AnimateOnScroll>
 
