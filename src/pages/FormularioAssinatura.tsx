@@ -20,13 +20,22 @@ export default function FormularioAssinatura() {
   const planData = location.state as PlanData;
 
   const [formData, setFormData] = useState({
-    nome: "",
-    email: "",
-    empresa: "",
+    nomeRazaoSocial: "",
+    cpfCnpj: "",
     telefone: "",
-    cnpj: "",
+    email: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    cep: "",
     observacoes: ""
   });
+
+  const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
+  const [isLoadingCEP, setIsLoadingCEP] = useState(false);
 
   // Redireciona para home se não houver dados do plano
   useEffect(() => {
@@ -40,6 +49,110 @@ export default function FormularioAssinatura() {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Função para buscar dados da empresa por CNPJ
+  const searchByCNPJ = async (cnpj: string) => {
+    const cleanCNPJ = cnpj.replace(/\D/g, '');
+    if (cleanCNPJ.length !== 14) return;
+
+    setIsLoadingCNPJ(true);
+    try {
+      const response = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCNPJ}`);
+      const data = await response.json();
+      
+      if (response.ok && data.razao_social) {
+        setFormData(prev => ({
+          ...prev,
+          nomeRazaoSocial: data.razao_social,
+          telefone: data.ddd_telefone_1 ? `(${data.ddd_telefone_1}) ${data.telefone_1}` : prev.telefone,
+          email: data.email || prev.email,
+          rua: data.logradouro || prev.rua,
+          numero: data.numero || prev.numero,
+          complemento: data.complemento || prev.complemento,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.municipio || prev.cidade,
+          estado: data.uf || prev.estado,
+          cep: data.cep || prev.cep
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CNPJ:', error);
+    }
+    setIsLoadingCNPJ(false);
+  };
+
+  // Função para buscar endereço por CEP
+  const searchByCEP = async (cep: string) => {
+    const cleanCEP = cep.replace(/\D/g, '');
+    if (cleanCEP.length !== 8) return;
+
+    setIsLoadingCEP(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+      const data = await response.json();
+      
+      if (response.ok && !data.erro) {
+        setFormData(prev => ({
+          ...prev,
+          rua: data.logradouro || prev.rua,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+    }
+    setIsLoadingCEP(false);
+  };
+
+  // Função para formatar CNPJ
+  const formatCNPJ = (value: string) => {
+    const clean = value.replace(/\D/g, '');
+    return clean.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  };
+
+  // Função para formatar CPF
+  const formatCPF = (value: string) => {
+    const clean = value.replace(/\D/g, '');
+    return clean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  };
+
+  // Função para formatar CEP
+  const formatCEP = (value: string) => {
+    const clean = value.replace(/\D/g, '');
+    return clean.replace(/(\d{5})(\d{3})/, '$1-$2');
+  };
+
+  // Handle change com formatação e busca automática
+  const handleFormattedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    if (name === 'cpfCnpj') {
+      const clean = value.replace(/\D/g, '');
+      if (clean.length <= 11) {
+        formattedValue = formatCPF(value);
+      } else {
+        formattedValue = formatCNPJ(value);
+        // Busca automática por CNPJ quando completo
+        if (clean.length === 14) {
+          searchByCNPJ(clean);
+        }
+      }
+    } else if (name === 'cep') {
+      formattedValue = formatCEP(value);
+      const clean = value.replace(/\D/g, '');
+      if (clean.length === 8) {
+        searchByCEP(clean);
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: formattedValue
     }));
   };
 
@@ -130,103 +243,237 @@ export default function FormularioAssinatura() {
             </CardHeader>
             
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome" className="text-[#575756] font-medium">
-                      Nome Completo *
-                    </Label>
-                    <Input
-                      id="nome"
-                      name="nome"
-                      type="text"
-                      value={formData.nome}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
-                      placeholder="Seu nome completo"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[#575756] font-medium">
-                      E-mail *
-                    </Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
-                      placeholder="seu@email.com"
-                    />
-                  </div>
-                </div>
-                
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Nome/Razão Social e CPF/CNPJ */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="empresa" className="text-[#575756] font-medium">
-                    Nome da Empresa *
+                  <Label htmlFor="nomeRazaoSocial" className="text-[#575756] font-medium">
+                    Nome / Razão Social *
                   </Label>
                   <Input
-                    id="empresa"
-                    name="empresa"
+                    id="nomeRazaoSocial"
+                    name="nomeRazaoSocial"
                     type="text"
-                    value={formData.empresa}
+                    value={formData.nomeRazaoSocial}
                     onChange={handleInputChange}
                     required
                     className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
-                    placeholder="Nome da sua empresa"
+                    placeholder="Nome completo ou razão social"
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="telefone" className="text-[#575756] font-medium">
-                      Telefone *
+                <div className="space-y-2">
+                  <Label htmlFor="cpfCnpj" className="text-[#575756] font-medium">
+                    CPF / CNPJ *
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="cpfCnpj"
+                      name="cpfCnpj"
+                      type="text"
+                      value={formData.cpfCnpj}
+                      onChange={handleFormattedChange}
+                      required
+                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                      placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                      maxLength={18}
+                    />
+                    {isLoadingCNPJ && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#084D6C]"></div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Para CNPJ, os dados da empresa serão preenchidos automaticamente
+                  </p>
+                </div>
+              </div>
+
+              {/* Telefone e Email */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="telefone" className="text-[#575756] font-medium">
+                    Telefone *
+                  </Label>
+                  <Input
+                    id="telefone"
+                    name="telefone"
+                    type="tel"
+                    value={formData.telefone}
+                    onChange={handleInputChange}
+                    required
+                    className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-[#575756] font-medium">
+                    E-mail *
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+              </div>
+
+              {/* CEP */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="cep" className="text-[#575756] font-medium">
+                    CEP *
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="cep"
+                      name="cep"
+                      type="text"
+                      value={formData.cep}
+                      onChange={handleFormattedChange}
+                      required
+                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                      placeholder="00000-000"
+                      maxLength={9}
+                    />
+                    {isLoadingCEP && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#084D6C]"></div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    O endereço será preenchido automaticamente
+                  </p>
+                </div>
+              </div>
+
+              {/* Endereço */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="rua" className="text-[#575756] font-medium">
+                      Rua *
                     </Label>
                     <Input
-                      id="telefone"
-                      name="telefone"
-                      type="tel"
-                      value={formData.telefone}
+                      id="rua"
+                      name="rua"
+                      type="text"
+                      value={formData.rua}
                       onChange={handleInputChange}
                       required
                       className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
-                      placeholder="(11) 99999-9999"
+                      placeholder="Nome da rua"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="cnpj" className="text-[#575756] font-medium">
-                      CNPJ
+                    <Label htmlFor="numero" className="text-[#575756] font-medium">
+                      Número *
                     </Label>
                     <Input
-                      id="cnpj"
-                      name="cnpj"
+                      id="numero"
+                      name="numero"
                       type="text"
-                      value={formData.cnpj}
+                      value={formData.numero}
                       onChange={handleInputChange}
+                      required
                       className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
-                      placeholder="00.000.000/0000-00"
+                      placeholder="123"
                     />
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="observacoes" className="text-[#575756] font-medium">
-                    Observações (opcional)
-                  </Label>
-                  <Textarea
-                    id="observacoes"
-                    name="observacoes"
-                    value={formData.observacoes}
-                    onChange={handleInputChange}
-                    className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C] min-h-[100px]"
-                    placeholder="Alguma informação adicional que gostaria de compartilhar..."
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="complemento" className="text-[#575756] font-medium">
+                      Complemento
+                    </Label>
+                    <Input
+                      id="complemento"
+                      name="complemento"
+                      type="text"
+                      value={formData.complemento}
+                      onChange={handleInputChange}
+                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                      placeholder="Apto, sala, etc."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="bairro" className="text-[#575756] font-medium">
+                      Bairro *
+                    </Label>
+                    <Input
+                      id="bairro"
+                      name="bairro"
+                      type="text"
+                      value={formData.bairro}
+                      onChange={handleInputChange}
+                      required
+                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                      placeholder="Nome do bairro"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="cidade" className="text-[#575756] font-medium">
+                      Cidade *
+                    </Label>
+                    <Input
+                      id="cidade"
+                      name="cidade"
+                      type="text"
+                      value={formData.cidade}
+                      onChange={handleInputChange}
+                      required
+                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                      placeholder="Nome da cidade"
+                    />
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="estado" className="text-[#575756] font-medium">
+                      Estado *
+                    </Label>
+                    <Input
+                      id="estado"
+                      name="estado"
+                      type="text"
+                      value={formData.estado}
+                      onChange={handleInputChange}
+                      required
+                      className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                      placeholder="SP"
+                      maxLength={2}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Observações */}
+              <div className="space-y-2">
+                <Label htmlFor="observacoes" className="text-[#575756] font-medium">
+                  Observações (opcional)
+                </Label>
+                <Textarea
+                  id="observacoes"
+                  name="observacoes"
+                  value={formData.observacoes}
+                  onChange={handleInputChange}
+                  className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C] min-h-[100px]"
+                  placeholder="Alguma informação adicional que gostaria de compartilhar..."
+                />
+              </div>
                 
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
                   <Button
