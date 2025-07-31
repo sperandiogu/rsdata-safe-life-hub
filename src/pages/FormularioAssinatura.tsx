@@ -279,24 +279,8 @@ export default function FormularioAssinatura() {
             
             <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Nome/Razão Social e CPF/CNPJ */}
+              {/* CPF/CNPJ e Nome/Razão Social */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="nomeRazaoSocial" className="text-[#575756] font-medium">
-                    Nome / Razão Social *
-                  </Label>
-                  <Input
-                    id="nomeRazaoSocial"
-                    name="nomeRazaoSocial"
-                    type="text"
-                    value={formData.nomeRazaoSocial}
-                    onChange={handleInputChange}
-                    required
-                    className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
-                    placeholder="Nome completo ou razão social"
-                  />
-                </div>
-                
                 <div className="space-y-2">
                   <Label htmlFor="cpfCnpj" className="text-[#575756] font-medium">
                     CPF / CNPJ *
@@ -322,6 +306,22 @@ export default function FormularioAssinatura() {
                   <p className="text-xs text-gray-500">
                     Para CNPJ, os dados da empresa serão preenchidos automaticamente
                   </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="nomeRazaoSocial" className="text-[#575756] font-medium">
+                    Nome / Razão Social *
+                  </Label>
+                  <Input
+                    id="nomeRazaoSocial"
+                    name="nomeRazaoSocial"
+                    type="text"
+                    value={formData.nomeRazaoSocial}
+                    onChange={handleInputChange}
+                    required
+                    className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                    placeholder="Nome completo ou razão social"
+                  />
                 </div>
               </div>
 
