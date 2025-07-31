@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PlanData {
   planName: string;
@@ -18,6 +19,7 @@ export default function FormularioAssinatura() {
   const location = useLocation();
   const navigate = useNavigate();
   const planData = location.state as PlanData;
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     nomeRazaoSocial: "",
@@ -36,6 +38,7 @@ export default function FormularioAssinatura() {
 
   const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redireciona para home se não houver dados do plano
   useEffect(() => {
@@ -156,49 +159,148 @@ export default function FormularioAssinatura() {
     }));
   };
 
+  // Função para validar dados antes do envio
+  const validateFormData = () => {
+    const requiredFields = [
+      'nomeRazaoSocial', 'cpfCnpj', 'telefone', 'email', 
+      'rua', 'numero', 'bairro', 'cidade', 'estado', 'cep'
+    ];
+    
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData].trim()) {
+        toast({
+          title: "Campo obrigatório",
+          description: `Por favor, preencha o campo ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
+    // Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Email inválido",
+        description: "Por favor, insira um email válido",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  // Função para tentar reenviar dados
+  const sendToWebhookWithRetry = async (data: any, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Tentativa ${attempt} de envio para webhook`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
+        const response = await fetch("https://hook.us2.make.com/0itcp73mvrj2gh4pke27jxoc2xkfqt1h", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "no-cors",
+          body: JSON.stringify(data),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        console.log(`Dados enviados com sucesso na tentativa ${attempt}`);
+        return true;
+        
+      } catch (error) {
+        console.error(`Erro na tentativa ${attempt}:`, error);
+        
+        if (attempt === maxRetries) {
+          console.error("Todas as tentativas falharam");
+          return false;
+        }
+        
+        // Aguardar antes da próxima tentativa (backoff exponencial)
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+    return false;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Preparar dados para envio
-    const dataToSend = {
-      ...formData,
-      plano: {
-        nome: planData.planName,
-        tipo: planData.planType,
-        preco: planData.price,
-        stripeLink: planData.stripeLink
-      },
-      timestamp: new Date().toISOString(),
-      origem: window.location.origin
-    };
-
-    console.log("Enviando dados para webhook:", dataToSend);
-
+    // Validar dados antes do envio
+    if (!validateFormData()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
-      // Enviar dados para o webhook do Make.com
-      const response = await fetch("https://hook.us2.make.com/0itcp73mvrj2gh4pke27jxoc2xkfqt1h", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        mode: "no-cors", // Para lidar com CORS
-        body: JSON.stringify(dataToSend),
+      toast({
+        title: "Processando dados",
+        description: "Enviando suas informações...",
       });
 
-      console.log("Dados enviados com sucesso para o webhook");
+      // Preparar dados para envio
+      const dataToSend = {
+        ...formData,
+        plano: {
+          nome: planData.planName,
+          tipo: planData.planType,
+          preco: planData.price,
+          stripeLink: planData.stripeLink
+        },
+        timestamp: new Date().toISOString(),
+        origem: window.location.origin,
+        userAgent: navigator.userAgent,
+        referrer: document.referrer
+      };
+
+      console.log("Dados preparados para envio:", dataToSend);
+
+      // Tentar enviar com retry
+      const webhookSuccess = await sendToWebhookWithRetry(dataToSend);
       
-      // Pequeno delay para garantir que o webhook foi processado
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (webhookSuccess) {
+        toast({
+          title: "Dados enviados com sucesso",
+          description: "Redirecionando para o pagamento...",
+        });
+        
+        // Aguardar um pouco mais para garantir processamento
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      } else {
+        toast({
+          title: "Aviso",
+          description: "Houve um problema no envio, mas você será redirecionado para o pagamento",
+          variant: "destructive",
+        });
+        
+        // Aguardar menos tempo em caso de erro
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       
       // Redirecionar para Stripe
+      console.log("Redirecionando para Stripe:", planData.stripeLink);
       window.open(planData.stripeLink, "_blank");
       
     } catch (error) {
-      console.error("Erro ao enviar dados para webhook:", error);
+      console.error("Erro inesperado:", error);
       
-      // Mesmo em caso de erro no webhook, continua para o Stripe
-      // para não bloquear o processo de pagamento
+      toast({
+        title: "Erro inesperado",
+        description: "Você será redirecionado para o pagamento, mas entre em contato conosco",
+        variant: "destructive",
+      });
+      
+      // Mesmo em caso de erro completo, redireciona para não bloquear o pagamento
       window.open(planData.stripeLink, "_blank");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -522,9 +624,17 @@ export default function FormularioAssinatura() {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-[#084D6C] hover:bg-[#084D6C]/90 text-white disabled:opacity-50"
                   >
-                    Continuar para Pagamento
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processando...
+                      </>
+                    ) : (
+                      "Continuar para Pagamento"
+                    )}
                   </Button>
                 </div>
               </form>
