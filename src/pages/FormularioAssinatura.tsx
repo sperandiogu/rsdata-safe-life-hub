@@ -159,20 +159,67 @@ export default function FormularioAssinatura() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Preparar dados para envio
-    const dataToSend = {
-      ...formData,
+    // Identificar tipo de documento
+    const cleanDocument = formData.cpfCnpj.replace(/\D/g, '');
+    const isCompany = cleanDocument.length === 14;
+    
+    // Estruturar JSON de forma organizada
+    const webhookData = {
+      // Informações do lead/cliente
+      lead: {
+        tipoCliente: isCompany ? "PJ" : "PF",
+        documento: formData.cpfCnpj,
+        documentoLimpo: cleanDocument,
+        nome: formData.nomeRazaoSocial,
+        telefone: formData.telefone,
+        email: formData.email.toLowerCase(),
+        observacoes: formData.observacoes || null
+      },
+      
+      // Endereço completo
+      endereco: {
+        cep: formData.cep,
+        rua: formData.rua,
+        numero: formData.numero,
+        complemento: formData.complemento || null,
+        bairro: formData.bairro,
+        cidade: formData.cidade,
+        estado: formData.estado.toUpperCase(),
+        enderecoCompleto: `${formData.rua}, ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''}, ${formData.bairro}, ${formData.cidade}/${formData.estado}, CEP: ${formData.cep}`
+      },
+      
+      // Informações do plano selecionado
       plano: {
         nome: planData.planName,
         tipo: planData.planType,
-        preco: planData.price,
-        stripeLink: planData.stripeLink
+        valor: planData.price,
+        valorFormatado: `R$ ${planData.price.toFixed(2).replace('.', ',')}`,
+        stripeCheckoutUrl: planData.stripeLink,
+        categoria: planData.planType === "Anual" ? "ANUAL" : "MENSAL"
       },
-      timestamp: new Date().toISOString(),
-      origem: window.location.origin
+      
+      // Metadados da sessão
+      sessao: {
+        timestamp: new Date().toISOString(),
+        timestampBrasil: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+        origem: window.location.origin,
+        userAgent: navigator.userAgent,
+        referrer: document.referrer || null,
+        idioma: navigator.language,
+        fusoHorario: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        resolucaoTela: `${screen.width}x${screen.height}`,
+        url: window.location.href
+      },
+      
+      // Status do processo
+      status: {
+        etapa: "FORMULARIO_PREENCHIDO",
+        proximaEtapa: "PAGAMENTO_STRIPE",
+        fonte: "LANDING_PAGE_RSDATA"
+      }
     };
 
-    console.log("Enviando dados para webhook:", dataToSend);
+    console.log("Dados preparados para envio:", webhookData);
 
     try {
       // Enviar dados para o webhook do Make.com
@@ -182,7 +229,7 @@ export default function FormularioAssinatura() {
           "Content-Type": "application/json",
         },
         mode: "no-cors", // Para lidar com CORS
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(webhookData),
       });
 
       console.log("Dados enviados com sucesso para o webhook");
