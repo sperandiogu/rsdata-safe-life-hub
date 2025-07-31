@@ -156,15 +156,50 @@ export default function FormularioAssinatura() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Aqui você pode salvar os dados em um banco de dados ou enviar por email
-    console.log("Dados do formulário:", formData);
-    console.log("Plano selecionado:", planData);
-    
-    // Redirecionar para Stripe
-    window.open(planData.stripeLink, "_blank");
+    // Preparar dados para envio
+    const dataToSend = {
+      ...formData,
+      plano: {
+        nome: planData.planName,
+        tipo: planData.planType,
+        preco: planData.price,
+        stripeLink: planData.stripeLink
+      },
+      timestamp: new Date().toISOString(),
+      origem: window.location.origin
+    };
+
+    console.log("Enviando dados para webhook:", dataToSend);
+
+    try {
+      // Enviar dados para o webhook do Make.com
+      const response = await fetch("https://hook.us2.make.com/0itcp73mvrj2gh4pke27jxoc2xkfqt1h", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        mode: "no-cors", // Para lidar com CORS
+        body: JSON.stringify(dataToSend),
+      });
+
+      console.log("Dados enviados com sucesso para o webhook");
+      
+      // Pequeno delay para garantir que o webhook foi processado
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Redirecionar para Stripe
+      window.open(planData.stripeLink, "_blank");
+      
+    } catch (error) {
+      console.error("Erro ao enviar dados para webhook:", error);
+      
+      // Mesmo em caso de erro no webhook, continua para o Stripe
+      // para não bloquear o processo de pagamento
+      window.open(planData.stripeLink, "_blank");
+    }
   };
 
   const handleGoBack = () => {
