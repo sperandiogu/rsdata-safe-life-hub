@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Check, Star, Shield, Heart, Menu } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { FormModal } from "@/components/ui/form-modal";
 
 // Animation component for scroll-triggered animations
 function AnimateOnScroll({
@@ -80,16 +80,10 @@ function AnimateOnScroll({
 }
 
 export function RSDataLanding() {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("hero");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "plus">("premium");
-  const [formModalOpen, setFormModalOpen] = useState(false);
-  const [selectedPlanData, setSelectedPlanData] = useState<{
-    planName: string;
-    planType: string;
-    price: number;
-    stripeLink: string;
-  } | null>(null);
 
   // Define prices and information for each plan
   const planData = {
@@ -175,16 +169,11 @@ export function RSDataLanding() {
 
   const currentPlan = planData[selectedPlan];
 
-  // Function to open form modal
-  const openFormModal = (planName: string, planType: string, price: number, stripeLink: string) => {
-    setSelectedPlanData({ planName, planType, price, stripeLink });
-    setFormModalOpen(true);
-  };
-
-  // Function to close form modal
-  const closeFormModal = () => {
-    setFormModalOpen(false);
-    setSelectedPlanData(null);
+  // Function to navigate to form page
+  const navigateToForm = (planName: string, planType: string, price: number, stripeLink: string) => {
+    navigate("/formulario-assinatura", {
+      state: { planName, planType, price, stripeLink }
+    });
   };
 
   return (
@@ -533,7 +522,7 @@ export function RSDataLanding() {
                   <Button
                     variant="outline"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => openFormModal(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
+                    onClick={() => navigateToForm(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -591,7 +580,7 @@ export function RSDataLanding() {
                   </div>
                   <Button
                     className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => openFormModal(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
+                    onClick={() => navigateToForm(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -645,7 +634,7 @@ export function RSDataLanding() {
                   <Button
                     variant="outline"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => openFormModal(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
+                    onClick={() => navigateToForm(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -693,7 +682,7 @@ export function RSDataLanding() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => openFormModal(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
+                    onClick={() => navigateToForm(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
                   >
                     ASSINAR MENSAL
                   </Button>
@@ -743,7 +732,7 @@ export function RSDataLanding() {
                   <Button
                     size="sm"
                     className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => openFormModal(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
+                    onClick={() => navigateToForm(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
                   >
                     ASSINAR ANUAL
                   </Button>
@@ -791,7 +780,7 @@ export function RSDataLanding() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => openFormModal(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
+                    onClick={() => navigateToForm(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
                   >
                     ASSINAR SEMESTRAL
                   </Button>
@@ -1044,18 +1033,6 @@ export function RSDataLanding() {
           </div>
         </div>
       </footer>
-
-      {/* Form Modal */}
-      {formModalOpen && selectedPlanData && (
-        <FormModal
-          isOpen={formModalOpen}
-          onClose={closeFormModal}
-          planName={selectedPlanData.planName}
-          planType={selectedPlanData.planType}
-          price={selectedPlanData.price}
-          stripeLink={selectedPlanData.stripeLink}
-        />
-      )}
     </div>
   );
 }
