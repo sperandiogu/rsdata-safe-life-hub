@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { FormModal } from "@/components/ui/form-modal";
 
 // Animation component for scroll-triggered animations
 function AnimateOnScroll({
@@ -82,6 +83,13 @@ export function RSDataLanding() {
   const [activeSection, setActiveSection] = useState("hero");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "plus">("premium");
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [selectedPlanData, setSelectedPlanData] = useState<{
+    planName: string;
+    planType: string;
+    price: number;
+    stripeLink: string;
+  } | null>(null);
 
   // Define prices and information for each plan
   const planData = {
@@ -166,6 +174,18 @@ export function RSDataLanding() {
   }, []);
 
   const currentPlan = planData[selectedPlan];
+
+  // Function to open form modal
+  const openFormModal = (planName: string, planType: string, price: number, stripeLink: string) => {
+    setSelectedPlanData({ planName, planType, price, stripeLink });
+    setFormModalOpen(true);
+  };
+
+  // Function to close form modal
+  const closeFormModal = () => {
+    setFormModalOpen(false);
+    setSelectedPlanData(null);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -513,7 +533,7 @@ export function RSDataLanding() {
                   <Button
                     variant="outline"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => window.open(currentPlan.prices.mensal.link, "_blank")}
+                    onClick={() => openFormModal(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -550,7 +570,7 @@ export function RSDataLanding() {
                       </span>
                     </div>
                     <p className="text-xs text-[#084D6C] font-medium">
-                      Economize R${(currentPlan.prices.anual.originalPrice! - currentPlan.prices.anual.price) * 12} por ano
+                      Economize R${Math.round((currentPlan.prices.anual.originalPrice! - currentPlan.prices.anual.price) * 12)} por ano
                     </p>
                   </div>
                 </CardHeader>
@@ -571,7 +591,7 @@ export function RSDataLanding() {
                   </div>
                   <Button
                     className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => window.open(currentPlan.prices.anual.link, "_blank")}
+                    onClick={() => openFormModal(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -603,7 +623,7 @@ export function RSDataLanding() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500">
-                      Economize R${(currentPlan.prices.semestral.originalPrice! - currentPlan.prices.semestral.price) * 6} por semestre
+                      Economize R${Math.round((currentPlan.prices.semestral.originalPrice! - currentPlan.prices.semestral.price) * 6)} por semestre
                     </p>
                   </div>
                 </CardHeader>
@@ -625,7 +645,7 @@ export function RSDataLanding() {
                   <Button
                     variant="outline"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => window.open(currentPlan.prices.semestral.link, "_blank")}
+                    onClick={() => openFormModal(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -673,7 +693,7 @@ export function RSDataLanding() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => window.open(currentPlan.prices.mensal.link, "_blank")}
+                    onClick={() => openFormModal(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
                   >
                     ASSINAR MENSAL
                   </Button>
@@ -687,9 +707,9 @@ export function RSDataLanding() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-[#084D6C] text-lg">{currentPlan.name} - Anual</h3>
-                      <p className="text-sm text-[#084D6C] mt-1">
-                        Economize R${(currentPlan.prices.anual.originalPrice! - currentPlan.prices.anual.price) * 12}/ano
-                      </p>
+                       <p className="text-sm text-[#084D6C] mt-1">
+                         Economize R${Math.round((currentPlan.prices.anual.originalPrice! - currentPlan.prices.anual.price) * 12)}/ano
+                       </p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-end gap-1">
@@ -723,7 +743,7 @@ export function RSDataLanding() {
                   <Button
                     size="sm"
                     className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => window.open(currentPlan.prices.anual.link, "_blank")}
+                    onClick={() => openFormModal(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
                   >
                     ASSINAR ANUAL
                   </Button>
@@ -734,9 +754,9 @@ export function RSDataLanding() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-[#575756] text-lg">{currentPlan.name} - Semestral</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Economize R${(currentPlan.prices.semestral.originalPrice! - currentPlan.prices.semestral.price) * 6}/semestre
-                      </p>
+                       <p className="text-sm text-gray-500 mt-1">
+                         Economize R${Math.round((currentPlan.prices.semestral.originalPrice! - currentPlan.prices.semestral.price) * 6)}/semestre
+                       </p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-end gap-1">
@@ -771,7 +791,7 @@ export function RSDataLanding() {
                     variant="outline"
                     size="sm"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => window.open(currentPlan.prices.semestral.link, "_blank")}
+                    onClick={() => openFormModal(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
                   >
                     ASSINAR SEMESTRAL
                   </Button>
@@ -1024,6 +1044,18 @@ export function RSDataLanding() {
           </div>
         </div>
       </footer>
+
+      {/* Form Modal */}
+      {formModalOpen && selectedPlanData && (
+        <FormModal
+          isOpen={formModalOpen}
+          onClose={closeFormModal}
+          planName={selectedPlanData.planName}
+          planType={selectedPlanData.planType}
+          price={selectedPlanData.price}
+          stripeLink={selectedPlanData.stripeLink}
+        />
+      )}
     </div>
   );
 }
