@@ -796,7 +796,7 @@ export function RSDataLanding() {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="flex items-center justify-center">
                     <Shield className="h-5 w-5 text-[#084D6C] mr-2" />
-                    <span className="text-sm font-medium text-[#575756]">Garantia de 30 dias</span>
+                    <span className="text-sm font-medium text-[#575756]">Garantia de 7 dias</span>
                   </div>
                   <div className="flex items-center justify-center">
                     <Check className="h-5 w-5 text-[#084D6C] mr-2" />
@@ -918,10 +918,10 @@ export function RSDataLanding() {
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger className="text-left font-medium text-[#575756]">
-                    Como funciona o período de teste de 30 dias?
+                    Como funciona o período de teste de 7 dias?
                   </AccordionTrigger>
                   <AccordionContent className="text-[#575756]">
-                    Oferecemos 30 dias de garantia para todos os nossos planos. Se você não estiver satisfeito com nossa
+                    Oferecemos 7 dias de garantia para todos os nossos planos. Se você não estiver satisfeito com nossa
                     plataforma, basta entrar em contato com nosso suporte para solicitar o cancelamento e reembolso
                     dentro deste período.
                   </AccordionContent>
