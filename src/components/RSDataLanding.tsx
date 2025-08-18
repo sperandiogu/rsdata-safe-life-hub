@@ -84,6 +84,7 @@ export function RSDataLanding() {
   const [activeSection, setActiveSection] = useState("hero");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "plus">("premium");
+  const [periodSelected, setPeriodSelected] = useState<"mensal" | "anual">("anual");
 
   // Define prices and information for each plan
   const planData = {
@@ -96,7 +97,6 @@ export function RSDataLanding() {
       color: "#084D6C",
       prices: {
         mensal: { price: 97, originalPrice: null, link: "https://seguro.rsdata.com.br/b/aFaeVd8Y2ebZ62a27j9ws07"},
-        semestral: { price: 82.45, originalPrice: 97, totalPrice: 494.70, link: "https://seguro.rsdata.com.br/b/5kQ28r3DI3xl3U2aDP9ws08"},
         anual: { price: 83.08, originalPrice: 97, totalPrice: 997, link: "https://seguro.rsdata.com.br/b/aFaaEX5LQebZgGO6nz9ws09" },
       },
     },
@@ -109,7 +109,6 @@ export function RSDataLanding() {
       color: "#084D6C",
       prices: {
         mensal: { price: 197, originalPrice: null, link: "https://seguro.rsdata.com.br/b/dRm9AT5LQ4Bp0HQcLX9ws0c"},
-        semestral: { price: 167.45, originalPrice: 197, totalPrice: 1004.70, link: "https://seguro.rsdata.com.br/b/28E5kDb6a5Ft62a5jv9ws0b"},
         anual: { price: 166.42, originalPrice: 197, totalPrice: 1997, link: "https://seguro.rsdata.com.br/b/7sY4gz8Y20l9eyG27j9ws0a"},
       },
     },
@@ -122,7 +121,6 @@ export function RSDataLanding() {
       color: "#084D6C",
       prices: {
         mensal: { price: 267, originalPrice: null, link: "https://seguro.rsdata.com.br/b/28EaEXfmq8RF9emcLX9ws0e"},
-        semestral: { price: 226.95, originalPrice: 267, totalPrice: 1361.70, link: "https://seguro.rsdata.com.br/b/bJe9AT3DI2thgGO6nz9ws0f"},
         anual: { price: 224.75, originalPrice: 267, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/5kQ8wPfmqd7V8ai9zL7ws0d"},
       },
     },
@@ -482,7 +480,7 @@ export function RSDataLanding() {
           </AnimateOnScroll>
 
           {/* Desktop Cards */}
-          <div className="hidden md:grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="hidden md:grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Monthly Plan */}
             <AnimateOnScroll animation="fade-up" delay={0.1}>
               <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300">
@@ -587,60 +585,6 @@ export function RSDataLanding() {
                 </CardContent>
               </Card>
             </AnimateOnScroll>
-
-            {/* Semiannual Plan */}
-            <AnimateOnScroll animation="fade-up" delay={0.3}>
-              <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300">
-                <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
-                    {currentPlan.name}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-[#575756] mb-1">
-                    Plano Semestral
-                  </CardDescription>
-                  <div className="mb-4">
-                    <div className="flex items-end justify-center gap-2 mb-1">
-                      <div className="flex items-end">
-                        <span className="text-sm text-[#575756]">R$</span>
-                        <span className="text-3xl font-bold text-[#575756]">
-                          {currentPlan.prices.semestral.price}
-                        </span>
-                        <span className="text-sm text-[#575756]">/mês</span>
-                      </div>
-                      <span className="text-sm text-gray-400 line-through">
-                        R${currentPlan.prices.semestral.originalPrice}
-                      </span>
-                    </div>
-                     <p className="text-xs text-gray-500">
-                       Total: R$ {currentPlan.prices.semestral.totalPrice} por semestre
-                     </p>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.lives}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.users}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.storage}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => navigateToForm(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
-                  >
-                    ASSINAR AGORA
-                  </Button>
-                </CardContent>
-              </Card>
-            </AnimateOnScroll>
           </div>
 
           {/* Mobile List Format */}
@@ -735,54 +679,6 @@ export function RSDataLanding() {
                     onClick={() => navigateToForm(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
                   >
                     ASSINAR ANUAL
-                  </Button>
-                </div>
-
-                {/* Semiannual Plan */}
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-[#575756] text-lg">{currentPlan.name} - Semestral</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Total: R$ {currentPlan.prices.semestral.totalPrice} por semestre
-                        </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-end gap-1">
-                        <div className="flex items-end">
-                          <span className="text-sm text-[#575756]">R$</span>
-                          <span className="text-2xl font-bold text-[#575756]">
-                            {currentPlan.prices.semestral.price}
-                          </span>
-                          <span className="text-sm text-[#575756]">/mês</span>
-                        </div>
-                        <span className="text-xs text-gray-400 line-through">
-                          R${currentPlan.prices.semestral.originalPrice}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.lives}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.users}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.storage}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => navigateToForm(currentPlan.name, "Semestral", currentPlan.prices.semestral.price, currentPlan.prices.semestral.link)}
-                  >
-                    ASSINAR SEMESTRAL
                   </Button>
                 </div>
               </div>
