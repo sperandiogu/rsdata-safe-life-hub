@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Star, Shield, Heart, Menu } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ArrowRight, Check, Heart, Menu, Shield, Star } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Animation component for scroll-triggered animations
 function AnimateOnScroll({
@@ -90,38 +90,35 @@ export function RSDataLanding() {
   const planData = {
     basic: {
       name: "BASIC",
-      description: "Para pequenas academias",
       lives: "Até 100 vidas",
       users: "Para equipes de até 2 usuários",
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
         mensal: { price: 97, originalPrice: null, link: "https://seguro.rsdata.com.br/b/aFaeVd8Y2ebZ62a27j9ws07"},
-        anual: { price: 83.08, originalPrice: 97, totalPrice: 997, link: "https://seguro.rsdata.com.br/b/aFaaEX5LQebZgGO6nz9ws09" },
+        anual: { price: 997, originalPrice: 1164, totalPrice: 997, link: "https://seguro.rsdata.com.br/b/aFaaEX5LQebZgGO6nz9ws09" },
       },
     },
     premium: {
       name: "PREMIUM",
-      description: "Melhor custo-benefício para academias",
       lives: "Até 300 vidas",
       users: "Para equipes de até 5 usuários",
       storage: "5 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
         mensal: { price: 197, originalPrice: null, link: "https://seguro.rsdata.com.br/b/dRm9AT5LQ4Bp0HQcLX9ws0c"},
-        anual: { price: 166.42, originalPrice: 197, totalPrice: 1997, link: "https://seguro.rsdata.com.br/b/7sY4gz8Y20l9eyG27j9ws0a"},
+        anual: { price: 1997, originalPrice: 2364, totalPrice: 1997, link: "https://seguro.rsdata.com.br/b/7sY4gz8Y20l9eyG27j9ws0a"},
       },
     },
     plus: {
       name: "PLUS",
-      description: "Para grandes academias",
       lives: "Até 500 vidas",
       users: "Para equipes de até 3 usuários",
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
         mensal: { price: 267, originalPrice: null, link: "https://seguro.rsdata.com.br/b/28EaEXfmq8RF9emcLX9ws0e"},
-        anual: { price: 224.75, originalPrice: 267, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/5kQ8wPfmqd7V8ai9zL7ws0d"},
+        anual: { price: 2697, originalPrice: 3204, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/5kQ8wPfmqd7V8ai9zL7ws0d"},
       },
     },
   };
@@ -469,174 +466,196 @@ export function RSDataLanding() {
             </div>
           </AnimateOnScroll>
 
-          {/* Plans Grid */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Basic Plan */}
-            <AnimateOnScroll animation="fade-up" delay={0.1}>
-              <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
-                <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
-                    {planData.basic.name}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-[#575756] mb-1">
-                    {planData.basic.description}
-                  </CardDescription>
-                  <div className="mb-4">
-                    <div className="flex items-end justify-center mb-1">
-                      <span className="text-sm text-[#575756]">R$</span>
-                      <span className="text-3xl font-bold text-[#575756]">
-                        {planData.basic.prices[periodSelected].price}
-                      </span>
-                      <span className="text-sm text-[#575756]">/mês</span>
-                    </div>
-                    {periodSelected === "anual" && planData.basic.prices.anual.originalPrice && (
-                      <p className="text-xs text-gray-500">
-                        <span className="line-through">R$ {planData.basic.prices.anual.originalPrice}</span>
-                        {" "}• Total: R$ {planData.basic.prices.anual.totalPrice}/ano
-                      </p>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.basic.lives}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.basic.users}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.basic.storage}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => navigateToForm(planData.basic.name, periodSelected === "mensal" ? "Mensal" : "Anual", planData.basic.prices[periodSelected].price, planData.basic.prices[periodSelected].link)}
-                  >
-                    ASSINAR AGORA
-                  </Button>
-                </CardContent>
-              </Card>
-            </AnimateOnScroll>
-
-            {/* Premium Plan - Highlighted */}
-            <AnimateOnScroll animation="fade-up" delay={0.2}>
-              <Card className="relative bg-white border-2 border-[#084D6C] shadow-lg transform md:scale-105">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-[#084D6C] text-white px-3 py-1 text-xs">
-                    Recomendado
-                  </Badge>
-                </div>
-                <CardHeader className="text-center pb-4 pt-6">
-                  <CardTitle className="text-lg font-semibold text-[#084D6C] mb-1">
-                    {planData.premium.name}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-[#575756] mb-1">
-                    {planData.premium.description}
-                  </CardDescription>
-                  <div className="mb-4">
-                    <div className="flex items-end justify-center gap-2 mb-1">
-                      <div className="flex items-end">
-                        <span className="text-sm text-[#084D6C]">R$</span>
-                        <span className="text-3xl font-bold text-[#084D6C]">
-                          {planData.premium.prices[periodSelected].price}
-                        </span>
-                        <span className="text-sm text-[#084D6C]">/mês</span>
-                      </div>
-                      {periodSelected === "anual" && planData.premium.prices.anual.originalPrice && (
-                        <span className="text-sm text-gray-400 line-through">
-                          R${planData.premium.prices.anual.originalPrice}
-                        </span>
-                      )}
-                    </div>
-                    {periodSelected === "anual" && planData.premium.prices.anual.totalPrice && (
-                      <p className="text-xs text-[#084D6C] font-medium">
-                        Total: R$ {planData.premium.prices.anual.totalPrice} por ano
-                      </p>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.premium.lives}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.premium.users}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.premium.storage}</span>
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => navigateToForm(planData.premium.name, periodSelected === "mensal" ? "Mensal" : "Anual", planData.premium.prices[periodSelected].price, planData.premium.prices[periodSelected].link)}
-                  >
-                    ASSINAR AGORA
-                  </Button>
-                </CardContent>
-              </Card>
-            </AnimateOnScroll>
-
-            {/* Plus Plan */}
-            <AnimateOnScroll animation="fade-up" delay={0.3}>
-              <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
-                <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
-                    {planData.plus.name}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-[#575756] mb-1">
-                    {planData.plus.description}
-                  </CardDescription>
-                  <div className="mb-4">
-                    <div className="flex items-end justify-center mb-1">
-                      <span className="text-sm text-[#575756]">R$</span>
-                      <span className="text-3xl font-bold text-[#575756]">
-                        {planData.plus.prices[periodSelected].price}
-                      </span>
-                      <span className="text-sm text-[#575756]">/mês</span>
-                    </div>
-                    {periodSelected === "anual" && planData.plus.prices.anual.originalPrice && (
-                      <p className="text-xs text-gray-500">
-                        <span className="line-through">R$ {planData.plus.prices.anual.originalPrice}</span>
-                        {" "}• Total: R$ {planData.plus.prices.anual.totalPrice}/ano
-                      </p>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.plus.lives}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.plus.users}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{planData.plus.storage}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => navigateToForm(planData.plus.name, periodSelected === "mensal" ? "Mensal" : "Anual", planData.plus.prices[periodSelected].price, planData.plus.prices[periodSelected].link)}
-                  >
-                    ASSINAR AGORA
-                  </Button>
-                </CardContent>
-              </Card>
-            </AnimateOnScroll>
+{/* Plans Grid */}
+<div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+  {/* Basic Plan */}
+  <AnimateOnScroll animation="fade-up" delay={0.1}>
+    <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
+          {planData.basic.name}
+        </CardTitle>
+        <CardDescription className="text-sm text-[#575756] mb-1">
+          {planData.basic.description}
+        </CardDescription>
+        <div className="mb-4">
+          <div className="flex items-end justify-center mb-1">
+            <span className="text-sm text-[#575756]">R$</span>
+            <span className="text-3xl font-bold text-[#575756]">
+              {planData.basic.prices[periodSelected].price}
+            </span>
+            <span className="text-sm text-[#575756]">
+              /{periodSelected === "mensal" ? "mês" : "ano"}
+            </span>
           </div>
+          {periodSelected === "anual" && planData.basic.prices.anual.originalPrice && (
+            <p className="text-xs text-gray-500">
+              <span className="line-through">R$ {planData.basic.prices.anual.originalPrice}</span>
+              {" "}• Total: R$ {planData.basic.prices.anual.totalPrice}/ano
+            </p>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.basic.lives}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.basic.users}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.basic.storage}</span>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
+          onClick={() => navigateToForm(
+            planData.basic.name,
+            periodSelected === "mensal" ? "Mensal" : "Anual",
+            planData.basic.prices[periodSelected].price,
+            planData.basic.prices[periodSelected].link
+          )}
+        >
+          ASSINAR AGORA
+        </Button>
+      </CardContent>
+    </Card>
+  </AnimateOnScroll>
+
+  {/* Premium Plan - Highlighted */}
+  <AnimateOnScroll animation="fade-up" delay={0.2}>
+    <Card className="relative bg-white border-2 border-[#084D6C] shadow-lg transform md:scale-105">
+      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+        <Badge className="bg-[#084D6C] text-white px-3 py-1 text-xs">
+          Recomendado
+        </Badge>
+      </div>
+      <CardHeader className="text-center pb-4 pt-6">
+        <CardTitle className="text-lg font-semibold text-[#084D6C] mb-1">
+          {planData.premium.name}
+        </CardTitle>
+        <CardDescription className="text-sm text-[#575756] mb-1">
+          {planData.premium.description}
+        </CardDescription>
+        <div className="mb-4">
+          <div className="flex items-end justify-center gap-2 mb-1">
+            <div className="flex items-end">
+              <span className="text-sm text-[#084D6C]">R$</span>
+              <span className="text-3xl font-bold text-[#084D6C]">
+                {planData.premium.prices[periodSelected].price}
+              </span>
+              <span className="text-sm text-[#084D6C]">
+                /{periodSelected === "mensal" ? "mês" : "ano"}
+              </span>
+            </div>
+            {periodSelected === "anual" && planData.premium.prices.anual.originalPrice && (
+              <span className="text-sm text-gray-400 line-through">
+                R${planData.premium.prices.anual.originalPrice}
+              </span>
+            )}
+          </div>
+          {periodSelected === "anual" && planData.premium.prices.anual.totalPrice && (
+            <p className="text-xs text-[#084D6C] font-medium">
+              Total: R$ {planData.premium.prices.anual.totalPrice} por ano
+            </p>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.premium.lives}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.premium.users}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.premium.storage}</span>
+          </div>
+        </div>
+        <Button
+          className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
+          onClick={() => navigateToForm(
+            planData.premium.name,
+            periodSelected === "mensal" ? "Mensal" : "Anual",
+            planData.premium.prices[periodSelected].price,
+            planData.premium.prices[periodSelected].link
+          )}
+        >
+          ASSINAR AGORA
+        </Button>
+      </CardContent>
+    </Card>
+  </AnimateOnScroll>
+
+  {/* Plus Plan */}
+  <AnimateOnScroll animation="fade-up" delay={0.3}>
+    <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
+          {planData.plus.name}
+        </CardTitle>
+        <CardDescription className="text-sm text-[#575756] mb-1">
+          {planData.plus.description}
+        </CardDescription>
+        <div className="mb-4">
+          <div className="flex items-end justify-center mb-1">
+            <span className="text-sm text-[#575756]">R$</span>
+            <span className="text-3xl font-bold text-[#575756]">
+              {planData.plus.prices[periodSelected].price}
+            </span>
+            <span className="text-sm text-[#575756]">
+              /{periodSelected === "mensal" ? "mês" : "ano"}
+            </span>
+          </div>
+          {periodSelected === "anual" && planData.plus.prices.anual.originalPrice && (
+            <p className="text-xs text-gray-500">
+              <span className="line-through">R$ {planData.plus.prices.anual.originalPrice}</span>
+              {" "}• Total: R$ {planData.plus.prices.anual.totalPrice}/ano
+            </p>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.plus.lives}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.plus.users}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.plus.storage}</span>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
+          onClick={() => navigateToForm(
+            planData.plus.name,
+            periodSelected === "mensal" ? "Mensal" : "Anual",
+            planData.plus.prices[periodSelected].price,
+            planData.plus.prices[periodSelected].link
+          )}
+        >
+          ASSINAR AGORA
+        </Button>
+      </CardContent>
+    </Card>
+  </AnimateOnScroll>
+</div>
+
 
           {/* Guarantees */}
           <AnimateOnScroll animation="fade-up" delay={0.4}>
@@ -810,17 +829,6 @@ export function RSDataLanding() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-5">
-                  <AccordionTrigger className="text-left font-medium text-[#575756]">
-                    O que são "usuários SEC"?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-[#575756]">
-                    Usuários SEC (Saúde e Segurança do Colaborador) são os colaboradores da empresa que têm acesso
-                    limitado ao sistema para visualizar suas próprias informações, como exames médicos, treinamentos e
-                    EPIs. Todos os nossos planos incluem usuários SEC ilimitados.
-                  </AccordionContent>
-                </AccordionItem>
-
                 <AccordionItem value="item-6">
                   <AccordionTrigger className="text-left font-medium text-[#575756]">
                     O sistema funciona em dispositivos móveis?
@@ -860,25 +868,25 @@ export function RSDataLanding() {
               />
             </div>
             <div className="flex flex-wrap justify-center md:justify-end gap-6 text-sm text-gray-300">
-              <a href="#" className="hover:text-white transition-colors">
-                Sobre
+              <a href="https://www.rsdata.com.br/quem-somos/" className="hover:text-white transition-colors">
+                Quem Somos
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="#planos" className="hover:text-white transition-colors">
                 Planos
               </a>
-              <a href="mailto:sac@rsdata.inf.br" className="hover:text-white transition-colors">
-                Contato: sac@rsdata.inf.br
+              <a href="https://www.rsdata.com.br/fale-conosco/" className="hover:text-white transition-colors">
+                Contato
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="https://apps.rsdata.com.br/chamados/#/solicitacoes?token=24a79d5b-e909-4804-9d90-5b864dc49d81" className="hover:text-white transition-colors">
                 Suporte
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="https://www.rsdata.com.br/politica-de-privacidade/" className="hover:text-white transition-colors">
                 Privacidade
               </a>
             </div>
           </div>
           <div className="border-t border-gray-400 mt-6 pt-6 text-center text-sm text-gray-300">
-            <p>&copy; 2024 RSData. Todos os direitos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} RSData. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
