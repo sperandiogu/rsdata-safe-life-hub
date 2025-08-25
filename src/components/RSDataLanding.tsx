@@ -246,7 +246,7 @@ export function RSDataLanding() {
             <div className="hidden md:block">
               <Button
                 className="bg-[#084D6C] hover:bg-[#084D6C]/90 text-white font-medium px-5 py-2 h-10 shadow-sm"
-                onClick={() => window.open("https://buy.stripe.com/cNi5kDdei9VJ62a8vH9ws02", "_blank")}
+                onClick={() => scrollToSection("planos")}
               >
                 ASSINE AGORA
               </Button>
@@ -285,7 +285,7 @@ export function RSDataLanding() {
                   <Button
                     className="bg-[#084D6C] hover:bg-[#084D6C]/90 text-white font-medium w-full"
                     onClick={() => {
-                      window.open("https://buy.stripe.com/cNi5kDdei9VJ62a8vH9ws02", "_blank");
+                      scrollToSection("planos");
                       setMobileMenuOpen(false);
                     }}
                   >
@@ -337,7 +337,7 @@ export function RSDataLanding() {
                   <Button
                     size="lg"
                     className="bg-[#084D6C] hover:bg-[#084D6C]/90"
-                    onClick={() => window.open("https://buy.stripe.com/cNi5kDdei9VJ62a8vH9ws02", "_blank")}
+                    onClick={() => scrollToSection("planos")}
                   >
                     <Heart className="w-4 h-4 mr-2" />
                     ASSINE AGORA
@@ -439,39 +439,29 @@ export function RSDataLanding() {
                 Selecione o plano que melhor atende às necessidades da sua empresa
               </p>
 
-              {/* Plan Selector */}
+              {/* Period Selector */}
               <div className="flex justify-center mb-8">
                 <div className="bg-white rounded-lg p-1 shadow-sm border border-gray-200">
                   <div className="flex">
                     <button
-                      onClick={() => setSelectedPlan("basic")}
+                      onClick={() => setPeriodSelected("mensal")}
                       className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                        selectedPlan === "basic"
+                        periodSelected === "mensal"
                           ? "bg-[#084D6C] text-white shadow-sm"
                           : "text-[#575756] hover:text-[#084D6C]"
                       }`}
                     >
-                      Basic
+                      Mensal
                     </button>
                     <button
-                      onClick={() => setSelectedPlan("premium")}
+                      onClick={() => setPeriodSelected("anual")}
                       className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                        selectedPlan === "premium"
+                        periodSelected === "anual"
                           ? "bg-[#084D6C] text-white shadow-sm"
                           : "text-[#575756] hover:text-[#084D6C]"
                       }`}
                     >
-                      Premium
-                    </button>
-                    <button
-                      onClick={() => setSelectedPlan("plus")}
-                      className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                        selectedPlan === "plus"
-                          ? "bg-[#084D6C] text-white shadow-sm"
-                          : "text-[#575756] hover:text-[#084D6C]"
-                      }`}
-                    >
-                      Plus
+                      Anual
                     </button>
                   </div>
                 </div>
@@ -479,48 +469,53 @@ export function RSDataLanding() {
             </div>
           </AnimateOnScroll>
 
-          {/* Desktop Cards */}
-          <div className="hidden md:grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Monthly Plan */}
+          {/* Plans Grid */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Basic Plan */}
             <AnimateOnScroll animation="fade-up" delay={0.1}>
-              <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300">
+              <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
-                    {currentPlan.name}
+                    {planData.basic.name}
                   </CardTitle>
                   <CardDescription className="text-sm text-[#575756] mb-1">
-                    Plano Mensal
+                    {planData.basic.description}
                   </CardDescription>
                   <div className="mb-4">
                     <div className="flex items-end justify-center mb-1">
                       <span className="text-sm text-[#575756]">R$</span>
                       <span className="text-3xl font-bold text-[#575756]">
-                        {currentPlan.prices.mensal.price}
+                        {planData.basic.prices[periodSelected].price}
                       </span>
                       <span className="text-sm text-[#575756]">/mês</span>
                     </div>
-                    <p className="text-xs text-gray-500">Flexibilidade total</p>
+                    {periodSelected === "anual" && planData.basic.prices.anual.originalPrice && (
+                      <p className="text-xs text-gray-500">
+                        <span className="line-through">R$ {planData.basic.prices.anual.originalPrice}</span>
+                        {" "}• Total: R$ {planData.basic.prices.anual.totalPrice}/ano
+                      </p>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.lives}</span>
+                      <span className="text-[#575756]">{planData.basic.lives}</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.users}</span>
+                      <span className="text-[#575756]">{planData.basic.users}</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.storage}</span>
+                      <span className="text-[#575756]">{planData.basic.storage}</span>
                     </div>
                   </div>
                   <Button
                     variant="outline"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => navigateToForm(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
+                    onClick={() => navigateToForm(planData.basic.name, periodSelected === "mensal" ? "Mensal" : "Anual", planData.basic.prices[periodSelected].price, planData.basic.prices[periodSelected].link)}
                   >
                     ASSINAR AGORA
                   </Button>
@@ -528,161 +523,119 @@ export function RSDataLanding() {
               </Card>
             </AnimateOnScroll>
 
-            {/* Annual Plan - Highlighted */}
+            {/* Premium Plan - Highlighted */}
             <AnimateOnScroll animation="fade-up" delay={0.2}>
               <Card className="relative bg-white border-2 border-[#084D6C] shadow-lg transform md:scale-105">
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-[#084D6C] text-white px-3 py-1 text-xs">
-                    Mais recomendado
+                    Recomendado
                   </Badge>
                 </div>
                 <CardHeader className="text-center pb-4 pt-6">
                   <CardTitle className="text-lg font-semibold text-[#084D6C] mb-1">
-                    {currentPlan.name}
+                    {planData.premium.name}
                   </CardTitle>
                   <CardDescription className="text-sm text-[#575756] mb-1">
-                    Plano Anual
+                    {planData.premium.description}
                   </CardDescription>
                   <div className="mb-4">
                     <div className="flex items-end justify-center gap-2 mb-1">
                       <div className="flex items-end">
                         <span className="text-sm text-[#084D6C]">R$</span>
                         <span className="text-3xl font-bold text-[#084D6C]">
-                          {currentPlan.prices.anual.price}
+                          {planData.premium.prices[periodSelected].price}
                         </span>
                         <span className="text-sm text-[#084D6C]">/mês</span>
                       </div>
-                      <span className="text-sm text-gray-400 line-through">
-                        R${currentPlan.prices.anual.originalPrice}
-                      </span>
+                      {periodSelected === "anual" && planData.premium.prices.anual.originalPrice && (
+                        <span className="text-sm text-gray-400 line-through">
+                          R${planData.premium.prices.anual.originalPrice}
+                        </span>
+                      )}
                     </div>
-                     <p className="text-xs text-[#084D6C] font-medium">
-                       Total: R$ {currentPlan.prices.anual.totalPrice} por ano
-                     </p>
+                    {periodSelected === "anual" && planData.premium.prices.anual.totalPrice && (
+                      <p className="text-xs text-[#084D6C] font-medium">
+                        Total: R$ {planData.premium.prices.anual.totalPrice} por ano
+                      </p>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.lives}</span>
+                      <span className="text-[#575756]">{planData.premium.lives}</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.users}</span>
+                      <span className="text-[#575756]">{planData.premium.users}</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-[#575756]">{currentPlan.storage}</span>
+                      <span className="text-[#575756]">{planData.premium.storage}</span>
                     </div>
                   </div>
                   <Button
                     className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => navigateToForm(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
+                    onClick={() => navigateToForm(planData.premium.name, periodSelected === "mensal" ? "Mensal" : "Anual", planData.premium.prices[periodSelected].price, planData.premium.prices[periodSelected].link)}
                   >
                     ASSINAR AGORA
                   </Button>
                 </CardContent>
               </Card>
             </AnimateOnScroll>
-          </div>
 
-          {/* Mobile List Format */}
-          <div className="md:hidden">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="divide-y divide-gray-200">
-                {/* Monthly Plan */}
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-[#575756] text-lg">{currentPlan.name} - Mensal</h3>
-                      <p className="text-sm text-gray-500 mt-1">Flexibilidade total</p>
+            {/* Plus Plan */}
+            <AnimateOnScroll animation="fade-up" delay={0.3}>
+              <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
+                    {planData.plus.name}
+                  </CardTitle>
+                  <CardDescription className="text-sm text-[#575756] mb-1">
+                    {planData.plus.description}
+                  </CardDescription>
+                  <div className="mb-4">
+                    <div className="flex items-end justify-center mb-1">
+                      <span className="text-sm text-[#575756]">R$</span>
+                      <span className="text-3xl font-bold text-[#575756]">
+                        {planData.plus.prices[periodSelected].price}
+                      </span>
+                      <span className="text-sm text-[#575756]">/mês</span>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-end">
-                        <span className="text-sm text-[#575756]">R$</span>
-                        <span className="text-2xl font-bold text-[#575756]">
-                          {currentPlan.prices.mensal.price}
-                        </span>
-                        <span className="text-sm text-[#575756]">/mês</span>
-                      </div>
-                    </div>
+                    {periodSelected === "anual" && planData.plus.prices.anual.originalPrice && (
+                      <p className="text-xs text-gray-500">
+                        <span className="line-through">R$ {planData.plus.prices.anual.originalPrice}</span>
+                        {" "}• Total: R$ {planData.plus.prices.anual.totalPrice}/ano
+                      </p>
+                    )}
                   </div>
+                </CardHeader>
+                <CardContent className="pt-0">
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.lives}</span>
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                      <span className="text-[#575756]">{planData.plus.lives}</span>
                     </div>
                     <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.users}</span>
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                      <span className="text-[#575756]">{planData.plus.users}</span>
                     </div>
                     <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.storage}</span>
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                      <span className="text-[#575756]">{planData.plus.storage}</span>
                     </div>
                   </div>
                   <Button
                     variant="outline"
-                    size="sm"
                     className="w-full border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
-                    onClick={() => navigateToForm(currentPlan.name, "Mensal", currentPlan.prices.mensal.price, currentPlan.prices.mensal.link)}
+                    onClick={() => navigateToForm(planData.plus.name, periodSelected === "mensal" ? "Mensal" : "Anual", planData.plus.prices[periodSelected].price, planData.plus.prices[periodSelected].link)}
                   >
-                    ASSINAR MENSAL
+                    ASSINAR AGORA
                   </Button>
-                </div>
-
-                {/* Annual Plan - Highlighted */}
-                <div className="p-6 bg-[#084D6C]/5 relative">
-                  <Badge className="absolute top-4 right-4 bg-[#084D6C] text-white px-2 py-1 text-xs">
-                    Recomendado
-                  </Badge>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-[#084D6C] text-lg">{currentPlan.name} - Anual</h3>
-                        <p className="text-sm text-[#084D6C] mt-1">
-                          Total: R$ {currentPlan.prices.anual.totalPrice} por ano
-                        </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-end gap-1">
-                        <div className="flex items-end">
-                          <span className="text-sm text-[#084D6C]">R$</span>
-                          <span className="text-2xl font-bold text-[#084D6C]">
-                            {currentPlan.prices.anual.price}
-                          </span>
-                          <span className="text-sm text-[#084D6C]">/mês</span>
-                        </div>
-                        <span className="text-xs text-gray-400 line-through">
-                          R${currentPlan.prices.anual.originalPrice}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.lives}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.users}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-[#575756]">{currentPlan.storage}</span>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
-                    onClick={() => navigateToForm(currentPlan.name, "Anual", currentPlan.prices.anual.price, currentPlan.prices.anual.link)}
-                  >
-                    ASSINAR ANUAL
-                  </Button>
-                </div>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
+            </AnimateOnScroll>
           </div>
 
           {/* Guarantees */}
