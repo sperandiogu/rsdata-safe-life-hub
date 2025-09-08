@@ -356,7 +356,7 @@ export function RSDataLanding() {
               <AnimateOnScroll animation="fade-left" delay={0.5}>
                 <div className="relative rounded-lg shadow-xl overflow-hidden border border-gray-200">
                   <img
-                    src="https://pages.greatpages.com.br/lp.rsdata.com.br-softwaresst/1753811902/imagens/desktop/592442_1_173867609058218691.png"
+                    src="https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/376927-a49f1118af057f7930f920763a8276c3.png"
                     alt="Dashboard RSData de Segurança e Saúde do Trabalho"
                     className="w-full h-auto rounded-lg"
                   />
