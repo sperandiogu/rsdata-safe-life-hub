@@ -475,9 +475,6 @@ export function RSDataLanding() {
         <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
           {planData.basic.name}
         </CardTitle>
-        <CardDescription className="text-sm text-[#575756] mb-1">
-          {planData.basic.description}
-        </CardDescription>
         <div className="mb-4">
           <div className="flex items-end justify-center mb-1">
             <span className="text-sm text-[#575756]">R$</span>
@@ -539,9 +536,6 @@ export function RSDataLanding() {
         <CardTitle className="text-lg font-semibold text-[#084D6C] mb-1">
           {planData.premium.name}
         </CardTitle>
-        <CardDescription className="text-sm text-[#575756] mb-1">
-          {planData.premium.description}
-        </CardDescription>
         <div className="mb-4">
           <div className="flex items-end justify-center gap-2 mb-1">
             <div className="flex items-end">
@@ -603,9 +597,6 @@ export function RSDataLanding() {
         <CardTitle className="text-lg font-semibold text-[#575756] mb-1">
           {planData.plus.name}
         </CardTitle>
-        <CardDescription className="text-sm text-[#575756] mb-1">
-          {planData.plus.description}
-        </CardDescription>
         <div className="mb-4">
           <div className="flex items-end justify-center mb-1">
             <span className="text-sm text-[#575756]">R$</span>
