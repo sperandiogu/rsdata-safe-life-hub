@@ -1,7 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Check, Heart, Menu, Shield, Star } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -95,19 +95,19 @@ export function RSDataLanding() {
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 97, originalPrice: null, link: "https://seguro.rsdata.com.br/b/aFaeVd8Y2ebZ62a27j9ws07"},
-        anual: { price: 997, originalPrice: 1164, totalPrice: 997, link: "https://seguro.rsdata.com.br/b/aFaaEX5LQebZgGO6nz9ws09" },
+        mensal: { price: 97, originalPrice: null, link: "https://seguro.rsdata.com.br/b/6oUcN58Y28RFeyGdQ19ws0i"},
+        anual: { price: 997, originalPrice: 1164, totalPrice: 997, link: "https://seguro.rsdata.com.br/b/14A00j5LQ3xl9emcLX9ws0h" },
       },
     },
     premium: {
       name: "PREMIUM",
-      lives: "Até 300 vidas",
-      users: "Para equipes de até 5 usuários",
+      lives: "Até 500 vidas",
+      users: "Para equipes de até 3 usuários",
       storage: "5 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 197, originalPrice: null, link: "https://seguro.rsdata.com.br/b/dRm9AT5LQ4Bp0HQcLX9ws0c"},
-        anual: { price: 1997, originalPrice: 2364, totalPrice: 1997, link: "https://seguro.rsdata.com.br/b/7sY4gz8Y20l9eyG27j9ws0a"},
+        mensal: { price: 197, originalPrice: null, link: "https://seguro.rsdata.com.br/b/fZu4gz7TYaZNbmuh2d9ws0l"},
+        anual: { price: 1997, originalPrice: 2364, totalPrice: 1997, link: "https://seguro.rsdata.com.br/b/fZu14ndei2th76e13f9ws0k"},
       },
     },
     plus: {
@@ -117,8 +117,8 @@ export function RSDataLanding() {
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 267, originalPrice: null, link: "https://seguro.rsdata.com.br/b/28EaEXfmq8RF9emcLX9ws0e"},
-        anual: { price: 2697, originalPrice: 3204, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/5kQ8wPfmqd7V8ai9zL7ws0d"},
+        mensal: { price: 267, originalPrice: null, link: "https://seguro.rsdata.com.br/b/14AcN5b6aebZaiqcLX9ws0g"},
+        anual: { price: 2697, originalPrice: 3204, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/3cI8wP4HMc3RgGOfY99ws0j"},
       },
     },
   };
@@ -297,10 +297,17 @@ export function RSDataLanding() {
 
       {/* CTA Banner */}
       <div className="bg-[#084D6C] text-white py-3">
-        <div className="container mx-auto px-4 text-center">
-          <span className="font-medium">Reduza acidentes de trabalho e garanta conformidade com as NRs</span>
-          <ArrowRight className="inline-block ml-2 h-4 w-4" />
-        </div>
+        <a
+          href="https://massacriativa.com.br/projetos/rsdata/pagina-ecommerce/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <div className="container mx-auto px-4 text-center">
+            <span className="font-medium">Conheça o Plano Facilitado RSData</span>
+            <ArrowRight className="inline-block ml-2 h-4 w-4" />
+          </div>
+        </a>
       </div>
 
       {/* Hero Section */}

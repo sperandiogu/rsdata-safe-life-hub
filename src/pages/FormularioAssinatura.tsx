@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Shield } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface PlanData {
   planName: string;
@@ -37,12 +37,11 @@ export default function FormularioAssinatura() {
   const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
 
-  // Redireciona para home se não houver dados do plano
+  // Caso não haja dados do plano, não redireciona automaticamente.
+  // Permite preencher o formulário mesmo acessando a URL diretamente.
   useEffect(() => {
-    if (!planData) {
-      navigate("/");
-    }
-  }, [planData, navigate]);
+    // Mantido vazio intencionalmente para não redirecionar.
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -61,7 +60,7 @@ export default function FormularioAssinatura() {
     try {
       const response = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCNPJ}`);
       const data = await response.json();
-      
+
       if (response.ok && data.razao_social) {
         setFormData(prev => ({
           ...prev,
@@ -92,7 +91,7 @@ export default function FormularioAssinatura() {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
       const data = await response.json();
-      
+
       if (response.ok && !data.erro) {
         setFormData(prev => ({
           ...prev,
@@ -158,11 +157,11 @@ export default function FormularioAssinatura() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Identificar tipo de documento
     const cleanDocument = formData.cpfCnpj.replace(/\D/g, '');
     const isCompany = cleanDocument.length === 14;
-    
+
     // Estruturar JSON de forma organizada
     const webhookData = {
       // Informações do lead/cliente
@@ -175,7 +174,7 @@ export default function FormularioAssinatura() {
         email: formData.email.toLowerCase(),
         observacoes: formData.observacoes || null
       },
-      
+
       // Endereço completo
       endereco: {
         cep: formData.cep,
@@ -187,7 +186,7 @@ export default function FormularioAssinatura() {
         estado: formData.estado.toUpperCase(),
         enderecoCompleto: `${formData.rua}, ${formData.numero}${formData.complemento ? `, ${formData.complemento}` : ''}, ${formData.bairro}, ${formData.cidade}/${formData.estado}, CEP: ${formData.cep}`
       },
-      
+
       // Informações do plano selecionado
       plano: {
         nome: planData.planName,
@@ -197,7 +196,7 @@ export default function FormularioAssinatura() {
         stripeCheckoutUrl: planData.stripeLink,
         categoria: planData.planType === "Anual" ? "ANUAL" : "MENSAL"
       },
-      
+
       // Metadados da sessão
       sessao: {
         timestamp: new Date().toISOString(),
@@ -210,7 +209,7 @@ export default function FormularioAssinatura() {
         resolucaoTela: `${screen.width}x${screen.height}`,
         url: window.location.href
       },
-      
+
       // Status do processo
       status: {
         etapa: "FORMULARIO_PREENCHIDO",
@@ -233,19 +232,27 @@ export default function FormularioAssinatura() {
       });
 
       console.log("Dados enviados com sucesso para o webhook");
-      
+
       // Pequeno delay para garantir que o webhook foi processado
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirecionar para Stripe
-      window.open(planData.stripeLink, "_blank");
-      
+
+      // Redirecionar para Stripe quando houver dados de plano
+      if (planData?.stripeLink) {
+        window.open(planData.stripeLink, "_blank");
+      } else {
+        // Sem plano: volta para página inicial para seleção de plano
+        navigate("/", { replace: true });
+      }
+
     } catch (error) {
       console.error("Erro ao enviar dados para webhook:", error);
-      
-      // Mesmo em caso de erro no webhook, continua para o Stripe
-      // para não bloquear o processo de pagamento
-      window.open(planData.stripeLink, "_blank");
+
+      // Mesmo em caso de erro no webhook, continua para o Stripe se houver link
+      if (planData?.stripeLink) {
+        window.open(planData.stripeLink, "_blank");
+      } else {
+        navigate("/", { replace: true });
+      }
     }
   };
 
@@ -253,9 +260,7 @@ export default function FormularioAssinatura() {
     navigate("/");
   };
 
-  if (!planData) {
-    return null; // ou um loading spinner
-  }
+  // Mesmo sem planData, renderizamos a página para permitir o preenchimento.
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -298,20 +303,33 @@ export default function FormularioAssinatura() {
             </p>
           </div>
 
-          {/* Plan Summary Card */}
-          <Card className="mb-8 border-[#084D6C]/20">
-            <CardHeader className="bg-[#084D6C]/5">
-              <CardTitle className="text-xl text-[#084D6C] flex items-center justify-between">
-                <span>Plano Selecionado</span>
-                <span className="text-sm font-normal bg-[#084D6C] text-white px-3 py-1 rounded-full">
-                  {planData.planType}
-                </span>
-              </CardTitle>
-              <CardDescription className="text-[#575756] text-lg">
-                {planData.planName} - R$ {planData.price}/mês
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          {/* Plan Summary Card (condicional) */}
+          {planData ? (
+            <Card className="mb-8 border-[#084D6C]/20">
+              <CardHeader className="bg-[#084D6C]/5">
+                <CardTitle className="text-xl text-[#084D6C] flex items-center justify-between">
+                  <span>Plano Selecionado</span>
+                  <span className="text-sm font-normal bg-[#084D6C] text-white px-3 py-1 rounded-full">
+                    {planData.planType}
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-[#575756] text-lg">
+                  {planData.planName} - R$ {planData.price}/mês
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ) : (
+            <Card className="mb-8 border-amber-300">
+              <CardHeader className="bg-amber-50">
+                <CardTitle className="text-base text-amber-800">
+                  Nenhum plano selecionado
+                </CardTitle>
+                <CardDescription className="text-amber-700">
+                  Você pode preencher seus dados agora e escolher o plano na etapa seguinte.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
 
           {/* Form Card */}
           <Card>
@@ -323,7 +341,7 @@ export default function FormularioAssinatura() {
                 Todos os campos marcados com * são obrigatórios
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* CPF/CNPJ e Nome/Razão Social */}
@@ -354,7 +372,7 @@ export default function FormularioAssinatura() {
                     Para CNPJ, os dados da empresa serão preenchidos automaticamente
                   </p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="nomeRazaoSocial" className="text-[#575756] font-medium">
                     Nome / Razão Social *
@@ -389,7 +407,7 @@ export default function FormularioAssinatura() {
                     placeholder="(11) 99999-9999"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-[#575756] font-medium">
                     E-mail *
@@ -455,7 +473,7 @@ export default function FormularioAssinatura() {
                       placeholder="Nome da rua"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="numero" className="text-[#575756] font-medium">
                       Número *
@@ -488,7 +506,7 @@ export default function FormularioAssinatura() {
                       placeholder="Apto, sala, etc."
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="bairro" className="text-[#575756] font-medium">
                       Bairro *
@@ -504,7 +522,7 @@ export default function FormularioAssinatura() {
                       placeholder="Nome do bairro"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="cidade" className="text-[#575756] font-medium">
                       Cidade *
@@ -541,7 +559,7 @@ export default function FormularioAssinatura() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Observações */}
               <div className="space-y-2">
                 <Label htmlFor="observacoes" className="text-[#575756] font-medium">
@@ -556,7 +574,7 @@ export default function FormularioAssinatura() {
                   placeholder="Alguma informação adicional que gostaria de compartilhar..."
                 />
               </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
                   <Button
                     type="button"
