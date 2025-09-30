@@ -594,7 +594,7 @@ export default function FormularioAssinatura() {
                     {/* PDF Embed */}
                     <div className="border border-gray-300 rounded-lg overflow-hidden">
                       <iframe
-                        src="https://www.rsdata.com.br/termos-e-condicoes/"
+                        src="https://store.rsdata.com.br/atualizado%20-%20termo%20ADES%C3%83O%20E-COMMERCE%20-%20plano%20consultoria.pdf"
                         width="100%"
                         height="400"
                         className="border-0"
@@ -615,7 +615,7 @@ export default function FormularioAssinatura() {
                       >
                         Li e aceito os{" "}
                         <a
-                          href="https://www.rsdata.com.br/termos-e-condicoes/"
+                          href="https://store.rsdata.com.br/atualizado%20-%20termo%20ADES%C3%83O%20E-COMMERCE%20-%20plano%20consultoria.pdf"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#084D6C] hover:underline"
