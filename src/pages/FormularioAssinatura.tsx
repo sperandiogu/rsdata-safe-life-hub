@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, FileText, Shield } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -36,6 +37,7 @@ export default function FormularioAssinatura() {
 
   const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Caso não haja dados do plano, não redireciona automaticamente.
   // Permite preencher o formulário mesmo acessando a URL diretamente.
@@ -157,6 +159,12 @@ export default function FormularioAssinatura() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Verificar se os termos foram aceitos
+    if (!termsAccepted) {
+      alert("Você deve aceitar os termos e condições para continuar.");
+      return;
+    }
 
     // Identificar tipo de documento
     const cleanDocument = formData.cpfCnpj.replace(/\D/g, '');
@@ -573,7 +581,52 @@ export default function FormularioAssinatura() {
                   className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C] min-h-[100px]"
                   placeholder="Alguma informação adicional que gostaria de compartilhar..."
                 />
-              </div>
+                </div>
+
+                {/* Termos e Condições */}
+                <div className="space-y-4 pt-6 border-t border-gray-200">
+                  <div className="space-y-3">
+                    <Label className="text-[#575756] font-medium flex items-center">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Termos e Condições
+                    </Label>
+
+                    {/* PDF Embed */}
+                    <div className="border border-gray-300 rounded-lg overflow-hidden">
+                      <iframe
+                        src="https://www.rsdata.com.br/termos-e-condicoes/"
+                        width="100%"
+                        height="400"
+                        className="border-0"
+                        title="Termos e Condições RSData"
+                      />
+                    </div>
+
+                    <div className="flex items-start space-x-2">
+                      <Checkbox
+                        id="terms"
+                        checked={termsAccepted}
+                        onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                        className="mt-1"
+                      />
+                      <Label
+                        htmlFor="terms"
+                        className="text-sm text-[#575756] cursor-pointer leading-relaxed"
+                      >
+                        Li e aceito os{" "}
+                        <a
+                          href="https://www.rsdata.com.br/termos-e-condicoes/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#084D6C] hover:underline"
+                        >
+                          termos e condições
+                        </a>{" "}
+                        do RSData. *
+                      </Label>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
                   <Button
@@ -587,7 +640,8 @@ export default function FormularioAssinatura() {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-[#084D6C] hover:bg-[#084D6C]/90 text-white"
+                    className="flex-1 bg-[#084D6C] hover:bg-[#084D6C]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!termsAccepted}
                   >
                     Continuar para Pagamento
                   </Button>
