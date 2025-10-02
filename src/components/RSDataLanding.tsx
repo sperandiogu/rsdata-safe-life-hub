@@ -298,13 +298,13 @@ export function RSDataLanding() {
       {/* CTA Banner */}
       <div className="bg-[#084D6C] text-white py-3">
         <a
-          href="https://massacriativa.com.br/projetos/rsdata/pagina-ecommerce/"
+          href="https://www.rsdata.com.br/store/"
           target="_blank"
           rel="noopener noreferrer"
           className="block"
         >
           <div className="container mx-auto px-4 text-center">
-            <span className="font-medium">Conheça o Plano Facilitado RSData</span>
+            <span className="font-medium">Conheça o Plano Ecommerce da RSData</span>
             <ArrowRight className="inline-block ml-2 h-4 w-4" />
           </div>
         </a>
@@ -826,18 +826,6 @@ export function RSDataLanding() {
                     RSData para garantir que sua equipe aproveite ao máximo todas as funcionalidades do sistema.
                   </AccordionContent>
                 </AccordionItem>
-
-                <AccordionItem value="item-6">
-                  <AccordionTrigger className="text-left font-medium text-[#575756]">
-                    O sistema funciona em dispositivos móveis?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-[#575756]">
-                    Sim, nossa plataforma é totalmente responsiva e pode ser acessada de qualquer dispositivo com
-                    conexão à internet. Além disso, oferecemos aplicativos móveis para iOS e Android que permitem
-                    realizar inspeções, registrar ocorrências e acessar documentos mesmo offline.
-                  </AccordionContent>
-                </AccordionItem>
-
                 <AccordionItem value="item-7">
                   <AccordionTrigger className="text-left font-medium text-[#575756]">
                     Como funciona o suporte técnico?
