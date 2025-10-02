@@ -101,7 +101,7 @@ export function RSDataLanding() {
     },
     premium: {
       name: "PREMIUM",
-      lives: "Até 500 vidas",
+      lives: "Até 300 vidas",
       users: "Para equipes de até 3 usuários",
       storage: "5 Gb de Espaço em Disco",
       color: "#084D6C",
