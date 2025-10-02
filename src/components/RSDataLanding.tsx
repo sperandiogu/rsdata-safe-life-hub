@@ -83,7 +83,7 @@ export function RSDataLanding() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("hero");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "plus">("premium");
+  const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "plus" | "enterprise">("premium");
   const [periodSelected, setPeriodSelected] = useState<"mensal" | "anual">("anual");
 
   // Define prices and information for each plan
@@ -119,6 +119,17 @@ export function RSDataLanding() {
       prices: {
         mensal: { price: 267, originalPrice: null, link: "https://seguro.rsdata.com.br/b/14AcN5b6aebZaiqcLX9ws0g"},
         anual: { price: 2697, originalPrice: 3204, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/3cI8wP4HMc3RgGOfY99ws0j"},
+      },
+    },
+    enterprise: {
+      name: "ENTERPRISE",
+      lives: "Mais de 500 vidas",
+      users: "Para empresas com mais de 500 vidas",
+      storage: "Consulte nosso time",
+      color: "#084D6C",
+      prices: {
+        mensal: { price: null, originalPrice: null, link: "https://wa.me/555137201416?text=Olá,%20gostaria%20de%20saber%20mais%20sobre%20o%20plano%20Enterprise%20mensal%20para%20empresas%20com%20mais%20de%20500%20vidas"},
+        anual: { price: null, originalPrice: null, link: "https://wa.me/555137201416?text=Olá,%20gostaria%20de%20saber%20mais%20sobre%20o%20plano%20Enterprise%20anual%20para%20empresas%20com%20mais%20de%20500%20vidas"},
       },
     },
   };
@@ -169,6 +180,11 @@ export function RSDataLanding() {
     navigate("/formulario-assinatura", {
       state: { planName, planType, price, stripeLink }
     });
+  };
+
+  // Function to handle Enterprise plan redirect to WhatsApp
+  const handleEnterprisePlan = (whatsappLink: string) => {
+    window.open(whatsappLink, "_blank");
   };
 
   return (
@@ -474,7 +490,7 @@ export function RSDataLanding() {
           </AnimateOnScroll>
 
 {/* Plans Grid */}
-<div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
   {/* Basic Plan */}
   <AnimateOnScroll animation="fade-up" delay={0.1}>
     <Card className="relative bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
@@ -648,6 +664,54 @@ export function RSDataLanding() {
           )}
         >
           ASSINAR AGORA
+        </Button>
+      </CardContent>
+    </Card>
+  </AnimateOnScroll>
+
+  {/* Enterprise Plan */}
+  <AnimateOnScroll animation="fade-up" delay={0.4}>
+    <Card className="relative bg-white border-2 border-orange-500 hover:shadow-lg transition-all duration-300 h-full">
+      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+        <Badge className="bg-orange-500 text-white px-3 py-1 text-xs">
+          Personalizado
+        </Badge>
+      </div>
+      <CardHeader className="text-center pb-4 pt-6">
+        <CardTitle className="text-lg font-semibold text-orange-500 mb-1">
+          {planData.enterprise.name}
+        </CardTitle>
+        <div className="mb-4">
+          <div className="flex items-center justify-center mb-1">
+            <span className="text-lg font-bold text-orange-500">
+              Consulte-nos
+            </span>
+          </div>
+          <p className="text-xs text-orange-600 font-medium">
+            Plano personalizado para sua empresa
+          </p>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.enterprise.lives}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.enterprise.users}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Check className="h-4 w-4 text-green-500 mr-2" />
+            <span className="text-[#575756]">{planData.enterprise.storage}</span>
+          </div>
+        </div>
+        <Button
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+          onClick={() => handleEnterprisePlan(planData.enterprise.prices[periodSelected].link)}
+        >
+          FALAR NO WHATSAPP
         </Button>
       </CardContent>
     </Card>
