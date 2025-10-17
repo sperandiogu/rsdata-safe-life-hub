@@ -359,7 +359,6 @@ export function RSDataLanding() {
                     className="bg-[#084D6C] hover:bg-[#084D6C]/90"
                     onClick={() => scrollToSection("planos")}
                   >
-                    <Heart className="w-4 h-4 mr-2" />
                     ASSINE AGORA
                   </Button>
                   <Button
