@@ -51,17 +51,7 @@ function AnimateOnScroll({
     };
   }, [threshold]);
 
-  useEffect(() => {
-  const handleHashChange = () => {
-    const element = document.querySelector(window.location.hash);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
-  window.addEventListener("hashchange", handleHashChange);
-  return () => window.removeEventListener("hashchange", handleHashChange);
-}, []);
 
 
   // Define animation classes
