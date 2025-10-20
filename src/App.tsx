@@ -13,9 +13,12 @@ const queryClient = new QueryClient();
 const App = () => {
   useEffect(() => {
     const handleHashChange = () => {
-      const element = document.querySelector(window.location.hash);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+      const hash = window.location.hash;
+      if (hash) {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
       }
     };
 
