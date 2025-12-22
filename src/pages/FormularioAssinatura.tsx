@@ -615,7 +615,7 @@ export default function FormularioAssinatura() {
                       >
                         Li e aceito os{" "}
                         <a
-                          href="https://store.rsdata.com.br/atualizado%20-%20termo%20ADES%C3%83O%20E-COMMERCE%20-%20plano%20consultoria.pdf"
+                          href="http://store.rsdata.com.br/termo-aceite-rsdata.pdf"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#084D6C] hover:underline"
