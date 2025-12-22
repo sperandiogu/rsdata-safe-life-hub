@@ -376,15 +376,28 @@ export function RSDataLanding() {
               </AnimateOnScroll>
             </div>
 
-            {/* Image/Mockup */}
+            {/* Video/Image Mockup */}
             <div className="lg:w-1/2 hidden lg:block">
               <AnimateOnScroll animation="fade-left" delay={0.5}>
                 <div className="relative rounded-lg shadow-xl overflow-hidden border border-gray-200">
-                  <img
-                    src="https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/376927-a49f1118af057f7930f920763a8276c3.png"
-                    alt="Dashboard RSData de Segurança e Saúde do Trabalho"
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                     className="w-full h-auto rounded-lg"
-                  />
+                    poster="https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/376927-a49f1118af057f7930f920763a8276c3.png"
+                  >
+                    <source
+                      src="VIDEO_URL_PLACEHOLDER"
+                      type="video/mp4"
+                    />
+                    <img
+                      src="https://cdn.greatsoftwares.com.br/arquivos/paginas_editor/376927-a49f1118af057f7930f920763a8276c3.png"
+                      alt="Dashboard RSData de Segurança e Saúde do Trabalho"
+                      className="w-full h-auto"
+                    />
+                  </video>
                   <div className="absolute inset-0 bg-gradient-to-tr from-[#084D6C]/10 to-transparent pointer-events-none"></div>
                 </div>
               </AnimateOnScroll>
