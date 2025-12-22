@@ -594,7 +594,7 @@ export default function FormularioAssinatura() {
                     {/* PDF Embed */}
                     <div className="border border-gray-300 rounded-lg overflow-hidden">
                       <iframe
-                        src="https://store.rsdata.com.br/atualizado%20-%20termo%20ADES%C3%83O%20E-COMMERCE%20-%20plano%20consultoria.pdf"
+                        src="http://store.rsdata.com.br/termo-aceite-rsdata.pdf"
                         width="100%"
                         height="400"
                         className="border-0"
