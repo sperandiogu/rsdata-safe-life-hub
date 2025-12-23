@@ -591,15 +591,31 @@ export default function FormularioAssinatura() {
                       Termos e Condições
                     </Label>
 
-                    {/* PDF Embed */}
-                    <div className="border border-gray-300 rounded-lg overflow-hidden">
-                      <iframe
-                        src="http://store.rsdata.com.br/termo-aceite-rsdata.pdf"
+                    {/* PDF Embed com fallback */}
+                    <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                      <object
+                        data="https://store.rsdata.com.br/termo-aceite-rsdata.pdf#toolbar=1&navpanes=1&scrollbar=1"
+                        type="application/pdf"
                         width="100%"
-                        height="400"
+                        height="500"
                         className="border-0"
-                        title="Termos e Condições RSData"
-                      />
+                      >
+                        <div className="p-6 text-center">
+                          <FileText className="w-12 h-12 text-[#084D6C] mx-auto mb-4" />
+                          <p className="text-[#575756] mb-4">
+                            Não foi possível exibir o PDF aqui.
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => window.open('https://store.rsdata.com.br/termo-aceite-rsdata.pdf', '_blank')}
+                            className="border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
+                          >
+                            <FileText className="w-4 h-4 mr-2" />
+                            Abrir PDF em Nova Aba
+                          </Button>
+                        </div>
+                      </object>
                     </div>
 
                     <div className="flex items-start space-x-2">
@@ -615,10 +631,10 @@ export default function FormularioAssinatura() {
                       >
                         Li e aceito os{" "}
                         <a
-                          href="http://store.rsdata.com.br/termo-aceite-rsdata.pdf"
+                          href="https://store.rsdata.com.br/termo-aceite-rsdata.pdf"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#084D6C] hover:underline"
+                          className="text-[#084D6C] hover:underline font-medium"
                         >
                           termos e condições
                         </a>{" "}
