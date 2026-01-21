@@ -769,13 +769,17 @@ export default function FormularioAssinatura() {
                   </div>
                 </div>
 
-                {preferenceId && (
+                {preferenceId && planData && (
                   <MercadoPagoCheckout
                     preferenceId={preferenceId}
+                    amount={planData.price}
                     onReady={() => console.log("MercadoPago checkout ready")}
                     onError={(error) => {
                       console.error("MercadoPago error:", error);
-                      setPaymentError("Erro ao carregar opções de pagamento. Tente novamente.");
+                      setPaymentError("Erro ao carregar opcoes de pagamento. Tente novamente.");
+                    }}
+                    onSubmit={(formData) => {
+                      console.log("Payment submitted:", formData);
                     }}
                   />
                 )}
