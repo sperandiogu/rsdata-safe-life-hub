@@ -89,50 +89,53 @@ export function RSDataLanding() {
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium" | "plus" | "enterprise">("premium");
   const [periodSelected, setPeriodSelected] = useState<"mensal" | "anual">("anual");
 
-  // Define prices and information for each plan
   const planData = {
     basic: {
       name: "BASIC",
+      planId: "basic",
       lives: "Até 100 vidas",
       users: "Para equipes de até 2 usuários",
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 97, originalPrice: null, link: "https://seguro.rsdata.com.br/b/6oUcN58Y28RFeyGdQ19ws0i"},
-        anual: { price: 997, originalPrice: 1164, totalPrice: 997, link: "https://seguro.rsdata.com.br/b/14A00j5LQ3xl9emcLX9ws0h" },
+        mensal: { price: 97, originalPrice: null, totalPrice: 97 },
+        anual: { price: 997, originalPrice: 1164, totalPrice: 997 },
       },
     },
     premium: {
       name: "PREMIUM",
+      planId: "premium",
       lives: "Até 300 vidas",
       users: "Para equipes de até 3 usuários",
       storage: "5 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 197, originalPrice: null, link: "https://seguro.rsdata.com.br/b/fZu4gz7TYaZNbmuh2d9ws0l"},
-        anual: { price: 1997, originalPrice: 2364, totalPrice: 1997, link: "https://seguro.rsdata.com.br/b/fZu14ndei2th76e13f9ws0k"},
+        mensal: { price: 197, originalPrice: null, totalPrice: 197 },
+        anual: { price: 1997, originalPrice: 2364, totalPrice: 1997 },
       },
     },
     plus: {
       name: "PLUS",
+      planId: "plus",
       lives: "Até 500 vidas",
       users: "Para equipes de até 3 usuários",
       storage: "3 Gb de Espaço em Disco",
       color: "#084D6C",
       prices: {
-        mensal: { price: 267, originalPrice: null, link: "https://seguro.rsdata.com.br/b/14AcN5b6aebZaiqcLX9ws0g"},
-        anual: { price: 2697, originalPrice: 3204, totalPrice: 2697, link: "https://seguro.rsdata.com.br/b/3cI8wP4HMc3RgGOfY99ws0j"},
+        mensal: { price: 267, originalPrice: null, totalPrice: 267 },
+        anual: { price: 2697, originalPrice: 3204, totalPrice: 2697 },
       },
     },
     enterprise: {
       name: "ENTERPRISE",
+      planId: "enterprise",
       lives: "Mais de 500 vidas",
       users: "Para empresas com mais de 500 vidas",
       storage: "Consulte nosso time",
       color: "#084D6C",
       prices: {
-        mensal: { price: null, originalPrice: null, link: "https://wa.me/555137201416?text=Olá,%20gostaria%20de%20saber%20mais%20sobre%20o%20plano%20Enterprise%20mensal%20para%20empresas%20com%20mais%20de%20500%20vidas"},
-        anual: { price: null, originalPrice: null, link: "https://wa.me/555137201416?text=Olá,%20gostaria%20de%20saber%20mais%20sobre%20o%20plano%20Enterprise%20anual%20para%20empresas%20com%20mais%20de%20500%20vidas"},
+        mensal: { price: null, originalPrice: null, totalPrice: null, whatsappLink: "https://wa.me/555137201416?text=Olá,%20gostaria%20de%20saber%20mais%20sobre%20o%20plano%20Enterprise%20mensal%20para%20empresas%20com%20mais%20de%20500%20vidas" },
+        anual: { price: null, originalPrice: null, totalPrice: null, whatsappLink: "https://wa.me/555137201416?text=Olá,%20gostaria%20de%20saber%20mais%20sobre%20o%20plano%20Enterprise%20anual%20para%20empresas%20com%20mais%20de%20500%20vidas" },
       },
     },
   };
@@ -178,14 +181,12 @@ export function RSDataLanding() {
 
   const currentPlan = planData[selectedPlan];
 
-  // Function to navigate to form page
-  const navigateToForm = (planName: string, planType: string, price: number, stripeLink: string) => {
+  const navigateToForm = (planName: string, planType: string, price: number, planId: string) => {
     navigate("/formulario-assinatura", {
-      state: { planName, planType, price, stripeLink }
+      state: { planName, planType, price, planId }
     });
   };
 
-  // Function to handle Enterprise plan redirect to WhatsApp
   const handleEnterprisePlan = (whatsappLink: string) => {
     window.open(whatsappLink, "_blank");
   };
@@ -553,7 +554,7 @@ export function RSDataLanding() {
             planData.basic.name,
             periodSelected === "mensal" ? "Mensal" : "Anual",
             planData.basic.prices[periodSelected].price,
-            planData.basic.prices[periodSelected].link
+            planData.basic.planId
           )}
         >
           ASSINAR AGORA
@@ -619,7 +620,7 @@ export function RSDataLanding() {
             planData.premium.name,
             periodSelected === "mensal" ? "Mensal" : "Anual",
             planData.premium.prices[periodSelected].price,
-            planData.premium.prices[periodSelected].link
+            planData.premium.planId
           )}
         >
           ASSINAR AGORA
@@ -675,7 +676,7 @@ export function RSDataLanding() {
             planData.plus.name,
             periodSelected === "mensal" ? "Mensal" : "Anual",
             planData.plus.prices[periodSelected].price,
-            planData.plus.prices[periodSelected].link
+            planData.plus.planId
           )}
         >
           ASSINAR AGORA
@@ -724,7 +725,7 @@ export function RSDataLanding() {
         </div>
         <Button
           className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-          onClick={() => handleEnterprisePlan(planData.enterprise.prices[periodSelected].link)}
+          onClick={() => handleEnterprisePlan(planData.enterprise.prices[periodSelected].whatsappLink!)}
         >
           FALAR NO WHATSAPP
         </Button>
