@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MercadoPagoCheckout } from "@/components/MercadoPagoCheckout";
 import { createPaymentPreference, generateExternalReference } from "@/lib/mercadopago";
+import { validateDocument } from "@/lib/validators";
 import { ArrowLeft, FileText, Loader2, Shield, CreditCard, AlertCircle } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -48,6 +49,7 @@ export default function FormularioAssinatura() {
   const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [documentError, setDocumentError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -131,6 +133,7 @@ export default function FormularioAssinatura() {
     let formattedValue = value;
 
     if (name === 'cpfCnpj') {
+      setDocumentError(null);
       const clean = value.replace(/\D/g, '');
       if (clean.length <= 11) {
         formattedValue = formatCPF(value);
@@ -271,6 +274,13 @@ export default function FormularioAssinatura() {
       navigate("/");
       return;
     }
+
+    const docValidation = validateDocument(formData.cpfCnpj);
+    if (!docValidation.valid) {
+      setDocumentError(docValidation.error || 'Documento inválido');
+      return;
+    }
+    setDocumentError(null);
 
     setIsCreatingPreference(true);
     setPaymentError(null);
@@ -443,7 +453,7 @@ export default function FormularioAssinatura() {
                           value={formData.cpfCnpj}
                           onChange={handleFormattedChange}
                           required
-                          className="border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]"
+                          className={`${documentError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-[#084D6C] focus:ring-[#084D6C]'}`}
                           placeholder="000.000.000-00 ou 00.000.000/0000-00"
                           maxLength={18}
                         />
@@ -453,9 +463,13 @@ export default function FormularioAssinatura() {
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">
-                        Para CNPJ, os dados da empresa serão preenchidos automaticamente
-                      </p>
+                      {documentError ? (
+                        <p className="text-xs text-red-500">{documentError}</p>
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          Para CNPJ, os dados da empresa serão preenchidos automaticamente
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
