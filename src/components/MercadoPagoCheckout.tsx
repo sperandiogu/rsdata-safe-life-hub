@@ -1,5 +1,4 @@
-import { initMercadoPago, CardPayment } from "@mercadopago/sdk-react";
-import type { ICardPaymentBrickPayer } from "@mercadopago/sdk-react/bricks/cardPayment/type";
+import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { useEffect, useState } from "react";
 import { MERCADOPAGO_PUBLIC_KEY } from "@/lib/mercadopago";
 import { Loader2 } from "lucide-react";
@@ -16,15 +15,6 @@ interface MercadoPagoCheckoutProps {
   externalReference: string;
   onReady?: () => void;
   onError?: (error: Error) => void;
-}
-
-interface CardPaymentFormData {
-  token: string;
-  issuer_id: string;
-  payment_method_id: string;
-  transaction_amount: number;
-  installments: number;
-  payer: ICardPaymentBrickPayer;
 }
 
 export function MercadoPagoCheckout({
@@ -61,9 +51,7 @@ export function MercadoPagoCheckout({
 
   const initialization = {
     amount: amount,
-    payer: {
-      email: customerEmail,
-    },
+    preferenceId: preferenceId,
   };
 
   const customization = {
@@ -72,87 +60,20 @@ export function MercadoPagoCheckout({
         theme: "default",
       },
     },
-    paymentMethods: {
-      maxInstallments: 12,
-    },
   };
 
-  const onSubmit = async (formData: CardPaymentFormData) => {
-    console.log("Payment form submitted:", formData);
-
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      const cleanDocument = customerDocument.replace(/\D/g, "");
-
-      const paymentPayload = {
-        token: formData.token,
-        issuerId: formData.issuer_id || "",
-        paymentMethodId: formData.payment_method_id,
-        transactionAmount: Number(formData.transaction_amount),
-        installments: Number(formData.installments),
-        description: `RSData - Plano ${planName} (${planType})`,
-        payer: {
-          email: customerEmail,
-          identification: {
-            type: cleanDocument.length === 14 ? "CNPJ" : "CPF",
-            number: cleanDocument,
-          },
-        },
-        externalReference: externalReference,
-      };
-
-      console.log("Sending payment payload:", paymentPayload);
-
-      const paymentResponse = await fetch(
-        `${supabaseUrl}/functions/v1/process-card-payment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseAnonKey}`,
-          },
-          body: JSON.stringify(paymentPayload),
-        }
-      );
-
-      const paymentResult = await paymentResponse.json();
-
-      if (!paymentResponse.ok) {
-        console.error("Payment error response:", paymentResult);
-        const errorMessage = paymentResult.message || paymentResult.error || "Erro ao processar pagamento";
-        const errorDetails = paymentResult.details ? JSON.stringify(paymentResult.details) : "";
-        throw new Error(`${errorMessage}${errorDetails ? ` - ${errorDetails}` : ""}`);
-      }
-
-      await fetch(`${supabaseUrl}/rest/v1/payments?external_reference=eq.${externalReference}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabaseAnonKey}`,
-          "apikey": supabaseAnonKey,
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify({
-          mp_payment_id: paymentResult.id,
-          status: paymentResult.status,
-          updated_at: new Date().toISOString(),
-        })
-      });
-
-      navigate(`/pagamento-confirmado?status=${paymentResult.status}&external_reference=${externalReference}`);
-
-      return paymentResult;
-    } catch (error) {
-      console.error("Error processing payment:", error);
-      throw error;
-    }
+  const onSubmit = async () => {
+    console.log("Payment submitted");
   };
 
   const onErrorCallback = (error: unknown) => {
-    console.error("MercadoPago CardPayment error:", error);
+    console.error("MercadoPago Payment error:", error);
     onError?.(new Error(String(error)));
+  };
+
+  const onReadyCallback = () => {
+    console.log("MercadoPago Payment ready");
+    onReady?.();
   };
 
   if (!isInitialized) {
@@ -166,11 +87,11 @@ export function MercadoPagoCheckout({
 
   return (
     <div className="mercadopago-checkout-container">
-      <CardPayment
+      <Payment
         initialization={initialization}
         customization={customization}
         onSubmit={onSubmit}
-        onReady={onReady}
+        onReady={onReadyCallback}
         onError={onErrorCallback}
       />
     </div>
