@@ -26,6 +26,7 @@ export default function FormularioAssinatura() {
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("form");
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
+  const [externalReference, setExternalReference] = useState<string>("");
   const [isCreatingPreference, setIsCreatingPreference] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
@@ -307,6 +308,7 @@ export default function FormularioAssinatura() {
       await savePaymentToDatabase(externalReference, preferenceResponse.preferenceId);
 
       setPreferenceId(preferenceResponse.preferenceId);
+      setExternalReference(externalReference);
       setCurrentStep("payment");
     } catch (error) {
       console.error("Erro ao criar preferência de pagamento:", error);
@@ -320,6 +322,7 @@ export default function FormularioAssinatura() {
     if (currentStep === "payment") {
       setCurrentStep("form");
       setPreferenceId(null);
+      setExternalReference("");
       setPaymentError(null);
     } else {
       navigate("/");
@@ -773,13 +776,16 @@ export default function FormularioAssinatura() {
                   <MercadoPagoCheckout
                     preferenceId={preferenceId}
                     amount={planData.price}
+                    planName={planData.planName}
+                    planType={planData.planType}
+                    customerEmail={formData.email}
+                    customerDocument={formData.cpfCnpj}
+                    customerName={formData.nomeRazaoSocial}
+                    externalReference={externalReference}
                     onReady={() => console.log("MercadoPago checkout ready")}
                     onError={(error) => {
                       console.error("MercadoPago error:", error);
                       setPaymentError("Erro ao carregar opcoes de pagamento. Tente novamente.");
-                    }}
-                    onSubmit={(formData) => {
-                      console.log("Payment submitted:", formData);
                     }}
                   />
                 )}
