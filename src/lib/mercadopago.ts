@@ -57,3 +57,55 @@ export async function createPaymentPreference(
 export function generateExternalReference(planId: string): string {
   return `rsdata_${planId}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
+
+export interface CardPaymentRequest {
+  formData: {
+    token: string;
+    issuer_id: string;
+    payment_method_id: string;
+    transaction_amount: number;
+    installments: number;
+    payer: {
+      email: string;
+      identification: {
+        type: string;
+        number: string;
+      };
+    };
+  };
+  externalReference: string;
+  planName: string;
+  planType: string;
+}
+
+export interface CardPaymentResponse {
+  id: number;
+  status: string;
+  status_detail: string;
+  payment_method_id: string;
+  payment_type_id: string;
+  transaction_amount: number;
+}
+
+export async function processCardPayment(
+  data: CardPaymentRequest
+): Promise<CardPaymentResponse> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/process-card-payment`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to process payment");
+  }
+
+  return response.json();
+}

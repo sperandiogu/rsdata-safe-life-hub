@@ -1,8 +1,9 @@
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { useEffect, useState } from "react";
-import { MERCADOPAGO_PUBLIC_KEY } from "@/lib/mercadopago";
+import { MERCADOPAGO_PUBLIC_KEY, processCardPayment } from "@/lib/mercadopago";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { IPaymentBrickCustomization } from "@mercadopago/sdk-react/bricks/payment/type";
 
 interface MercadoPagoCheckoutProps {
   preferenceId: string;
@@ -30,6 +31,7 @@ export function MercadoPagoCheckout({
   onError,
 }: MercadoPagoCheckoutProps) {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export function MercadoPagoCheckout({
     },
   };
 
-  const customization = {
+  const customization: IPaymentBrickCustomization = {
     paymentMethods: {
       creditCard: "all",
       debitCard: "all",
@@ -68,13 +70,53 @@ export function MercadoPagoCheckout({
     },
     visual: {
       style: {
-        theme: "default" as const,
+        theme: "default",
       },
     },
   };
 
-  const onSubmit = async () => {
-    console.log("Payment submitted");
+  const onSubmit = async (formData: { formData: Record<string, unknown> }) => {
+    setIsProcessing(true);
+
+    try {
+      const cleanDocument = customerDocument.replace(/\D/g, "");
+      const isCompany = cleanDocument.length === 14;
+
+      const paymentData = {
+        formData: {
+          token: formData.formData.token as string,
+          issuer_id: String(formData.formData.issuer_id || ""),
+          payment_method_id: formData.formData.payment_method_id as string,
+          transaction_amount: amount,
+          installments: Number(formData.formData.installments) || 1,
+          payer: {
+            email: customerEmail,
+            identification: {
+              type: isCompany ? "CNPJ" : "CPF",
+              number: cleanDocument,
+            },
+          },
+        },
+        externalReference,
+        planName,
+        planType,
+      };
+
+      const result = await processCardPayment(paymentData);
+
+      if (result.status === "approved") {
+        navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&payment_id=${result.id}`);
+      } else if (result.status === "pending" || result.status === "in_process") {
+        navigate(`/pagamento-confirmado?status=pending&external_reference=${externalReference}&payment_id=${result.id}`);
+      } else {
+        onError?.(new Error(`Pagamento ${result.status}: ${result.status_detail}`));
+      }
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      onError?.(error as Error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const onErrorCallback = (error: unknown) => {
@@ -97,7 +139,15 @@ export function MercadoPagoCheckout({
   }
 
   return (
-    <div className="mercadopago-checkout-container">
+    <div className="mercadopago-checkout-container relative">
+      {isProcessing && (
+        <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-50 rounded-lg">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-10 w-10 animate-spin text-[#084D6C]" />
+            <span className="text-[#575756] font-medium">Processando pagamento...</span>
+          </div>
+        </div>
+      )}
       <Payment
         initialization={initialization}
         customization={customization}
