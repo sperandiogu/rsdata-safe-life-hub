@@ -99,9 +99,12 @@ Deno.serve(async (req: Request) => {
       external_reference: externalReference || `rsdata_${Date.now()}`,
       statement_descriptor: "RSDATA SST",
       payment_methods: {
+        excluded_payment_methods: [],
         excluded_payment_types: [],
         installments: 12,
+        default_installments: 1,
       },
+      binary_mode: false,
       notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`,
     };
 

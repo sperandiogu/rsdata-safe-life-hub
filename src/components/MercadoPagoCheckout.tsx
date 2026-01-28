@@ -50,7 +50,6 @@ export function MercadoPagoCheckout({
   }, [onError]);
 
   const initialization = {
-    amount: amount,
     preferenceId: preferenceId,
   };
 
