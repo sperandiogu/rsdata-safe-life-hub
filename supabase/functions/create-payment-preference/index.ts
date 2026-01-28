@@ -91,9 +91,9 @@ Deno.serve(async (req: Request) => {
         },
       },
       back_urls: {
-        success: `${req.headers.get("origin")}/pagamento-confirmado?status=approved`,
-        failure: `${req.headers.get("origin")}/pagamento-confirmado?status=rejected`,
-        pending: `${req.headers.get("origin")}/pagamento-confirmado?status=pending`,
+        success: `${req.headers.get("origin")}/pagamento-confirmado?status=approved&external_reference=${externalReference || `rsdata_${Date.now()}`}`,
+        failure: `${req.headers.get("origin")}/pagamento-confirmado?status=rejected&external_reference=${externalReference || `rsdata_${Date.now()}`}`,
+        pending: `${req.headers.get("origin")}/pagamento-confirmado?status=pending&external_reference=${externalReference || `rsdata_${Date.now()}`}`,
       },
       auto_return: "approved",
       external_reference: externalReference || `rsdata_${Date.now()}`,
