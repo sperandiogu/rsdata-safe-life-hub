@@ -50,13 +50,25 @@ export function MercadoPagoCheckout({
   }, [onError]);
 
   const initialization = {
+    amount: amount,
     preferenceId: preferenceId,
+    payer: {
+      email: customerEmail,
+    },
   };
 
   const customization = {
+    paymentMethods: {
+      creditCard: "all",
+      debitCard: "all",
+      ticket: "all",
+      bankTransfer: "all",
+      atm: "all",
+      mercadoPago: ["wallet_purchase"],
+    },
     visual: {
       style: {
-        theme: "default",
+        theme: "default" as const,
       },
     },
   };
