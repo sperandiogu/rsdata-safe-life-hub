@@ -88,10 +88,10 @@ export function MercadoPagoCheckout({
 
       const paymentPayload = {
         token: formData.token,
-        issuerId: formData.issuer_id,
+        issuerId: formData.issuer_id || "",
         paymentMethodId: formData.payment_method_id,
-        transactionAmount: formData.transaction_amount,
-        installments: formData.installments,
+        transactionAmount: Number(formData.transaction_amount),
+        installments: Number(formData.installments),
         description: `RSData - Plano ${planName} (${planType})`,
         payer: {
           email: customerEmail,
@@ -102,6 +102,8 @@ export function MercadoPagoCheckout({
         },
         externalReference: externalReference,
       };
+
+      console.log("Sending payment payload:", paymentPayload);
 
       const paymentResponse = await fetch(
         `${supabaseUrl}/functions/v1/process-card-payment`,
@@ -118,7 +120,10 @@ export function MercadoPagoCheckout({
       const paymentResult = await paymentResponse.json();
 
       if (!paymentResponse.ok) {
-        throw new Error(paymentResult.error || "Erro ao processar pagamento");
+        console.error("Payment error response:", paymentResult);
+        const errorMessage = paymentResult.message || paymentResult.error || "Erro ao processar pagamento";
+        const errorDetails = paymentResult.details ? JSON.stringify(paymentResult.details) : "";
+        throw new Error(`${errorMessage}${errorDetails ? ` - ${errorDetails}` : ""}`);
       }
 
       await fetch(`${supabaseUrl}/rest/v1/payments?external_reference=eq.${externalReference}`, {

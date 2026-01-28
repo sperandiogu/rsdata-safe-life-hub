@@ -46,6 +46,21 @@ Deno.serve(async (req: Request) => {
 
     const paymentData: PaymentData = await req.json();
 
+    console.log("Received payment data:", JSON.stringify(paymentData, null, 2));
+
+    if (!paymentData.token || !paymentData.paymentMethodId) {
+      return new Response(
+        JSON.stringify({
+          error: "Missing required fields",
+          details: "Token and payment method ID are required"
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const payment = {
       token: paymentData.token,
       issuer_id: paymentData.issuerId,
@@ -65,6 +80,8 @@ Deno.serve(async (req: Request) => {
       notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`,
     };
 
+    console.log("Sending payment to Mercado Pago:", JSON.stringify(payment, null, 2));
+
     const response = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
       headers: {
@@ -77,9 +94,13 @@ Deno.serve(async (req: Request) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Mercado Pago API error:", data);
+      console.error("Mercado Pago API error:", JSON.stringify(data, null, 2));
       return new Response(
-        JSON.stringify({ error: "Failed to process payment", details: data }),
+        JSON.stringify({
+          error: "Failed to process payment",
+          details: data,
+          message: data.message || "Payment processing failed"
+        }),
         {
           status: response.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
