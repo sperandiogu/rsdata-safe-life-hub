@@ -444,7 +444,7 @@ async function sendEmailWithPostmark(
   subject: string,
   htmlBody: string,
   textBody: string,
-  from: string = "noreply@rsdata.com.br"
+  from: string = "store@rsdata.com.br"
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const postmarkToken = Deno.env.get("POSTMARK_SERVER_TOKEN");
 
