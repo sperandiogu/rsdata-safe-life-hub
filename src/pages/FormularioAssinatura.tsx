@@ -764,7 +764,7 @@ export default function FormularioAssinatura() {
                   Escolha a Forma de Pagamento
                 </CardTitle>
                 <CardDescription className="text-[#575756]">
-                  Pague com cartão de crédito, Pix ou boleto bancário
+                  Pague com cartão de crédito ou débito
                 </CardDescription>
               </CardHeader>
 
