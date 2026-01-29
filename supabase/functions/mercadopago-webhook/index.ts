@@ -202,6 +202,79 @@ Deno.serve(async (req: Request) => {
             } catch (webhookError) {
               console.error("Error notifying Make.com webhook:", webhookError);
             }
+
+            const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
+
+            try {
+              const customerEmailResponse = await fetch(sendEmailUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  action: "send_customer_confirmation",
+                  data: {
+                    customerName: paymentRecord.customer.name,
+                    customerEmail: paymentRecord.customer.email,
+                    planName: paymentRecord.subscription.plan.name,
+                    planType: paymentRecord.subscription.billing_period === "mensal" ? "monthly" : "yearly",
+                    planPrice: paymentRecord.amount,
+                    subscriptionStartDate: startedAt.toISOString(),
+                    subscriptionEndDate: expiresAt.toISOString(),
+                  },
+                  paymentId: paymentRecord.id,
+                  subscriptionId: paymentRecord.subscription.id,
+                }),
+              });
+              const customerEmailResult = await customerEmailResponse.json();
+              console.log("Customer confirmation email:", customerEmailResult.success ? "sent" : "failed");
+            } catch (emailError) {
+              console.error("Error sending customer email:", emailError);
+            }
+
+            try {
+              const internalEmailResponse = await fetch(sendEmailUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  action: "send_internal_notification",
+                  data: {
+                    customerName: paymentRecord.customer.name,
+                    customerDocument: paymentRecord.customer.document,
+                    customerEmail: paymentRecord.customer.email,
+                    customerPhone: paymentRecord.customer.phone,
+                    addressStreet: addressData?.street || "",
+                    addressNumber: addressData?.number || "",
+                    addressComplement: addressData?.complement || "",
+                    addressNeighborhood: addressData?.neighborhood || "",
+                    addressCity: addressData?.city || "",
+                    addressState: addressData?.state || "",
+                    addressCep: addressData?.cep || "",
+                    planName: paymentRecord.subscription.plan.name,
+                    planType: paymentRecord.subscription.billing_period === "mensal" ? "monthly" : "yearly",
+                    planPrice: paymentRecord.amount,
+                    subscriptionId: paymentRecord.subscription.id,
+                    subscriptionStartDate: startedAt.toISOString(),
+                    subscriptionEndDate: expiresAt.toISOString(),
+                    paymentId: paymentRecord.id,
+                    mercadoPagoPaymentId: payment.id.toString(),
+                    paymentMethod: payment.payment_method_id,
+                    installments: payment.installments,
+                    approvalDate: payment.date_approved || new Date().toISOString(),
+                  },
+                  paymentId: paymentRecord.id,
+                  subscriptionId: paymentRecord.subscription.id,
+                }),
+              });
+              const internalEmailResult = await internalEmailResponse.json();
+              console.log("Internal notification email:", internalEmailResult.success ? "sent" : "failed");
+            } catch (emailError) {
+              console.error("Error sending internal email:", emailError);
+            }
           }
         }
       }
