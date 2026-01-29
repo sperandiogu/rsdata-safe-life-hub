@@ -117,6 +117,129 @@ Deno.serve(async (req: Request) => {
             payment_type: data.payment_type_id,
           }),
         });
+
+        if (data.status === "approved") {
+          try {
+            const paymentResponse = await fetch(
+              `${supabaseUrl}/rest/v1/payments?external_reference=eq.${externalReference}&select=*,customer:customers(*),subscription:subscriptions(*,plan:plans(*))`,
+              {
+                headers: {
+                  Authorization: `Bearer ${supabaseServiceKey}`,
+                  apikey: supabaseServiceKey,
+                }
+              }
+            );
+
+            const payments = await paymentResponse.json();
+
+            if (payments && payments.length > 0) {
+              const paymentRecord = payments[0];
+
+              if (paymentRecord.subscription) {
+                const startedAt = new Date();
+                let expiresAt = new Date();
+
+                if (paymentRecord.subscription.billing_period === 'mensal') {
+                  expiresAt.setDate(expiresAt.getDate() + 30);
+                } else {
+                  expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+                }
+
+                await fetch(`${supabaseUrl}/rest/v1/subscriptions?id=eq.${paymentRecord.subscription.id}`, {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${supabaseServiceKey}`,
+                    apikey: supabaseServiceKey,
+                  },
+                  body: JSON.stringify({
+                    status: 'active',
+                    started_at: startedAt.toISOString(),
+                    expires_at: expiresAt.toISOString(),
+                  }),
+                });
+
+                const addressResponse = await fetch(
+                  `${supabaseUrl}/rest/v1/addresses?customer_id=eq.${paymentRecord.customer_id}&is_default=eq.true`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${supabaseServiceKey}`,
+                      apikey: supabaseServiceKey,
+                    }
+                  }
+                );
+
+                const addresses = await addressResponse.json();
+                const addressData = addresses && addresses.length > 0 ? addresses[0] : null;
+
+                const sendEmailUrl = `${supabaseUrl}/functions/v1/send-email`;
+
+                await fetch(sendEmailUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${supabaseServiceKey}`,
+                  },
+                  body: JSON.stringify({
+                    action: "send_customer_confirmation",
+                    data: {
+                      customerName: paymentRecord.customer.name,
+                      customerEmail: paymentRecord.customer.email,
+                      planName: paymentRecord.subscription.plan.name,
+                      planType: paymentRecord.subscription.billing_period === "mensal" ? "monthly" : "yearly",
+                      planPrice: paymentRecord.amount,
+                      subscriptionStartDate: startedAt.toISOString(),
+                      subscriptionEndDate: expiresAt.toISOString(),
+                    },
+                    paymentId: paymentRecord.id,
+                    subscriptionId: paymentRecord.subscription.id,
+                  }),
+                });
+
+                await fetch(sendEmailUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${supabaseServiceKey}`,
+                  },
+                  body: JSON.stringify({
+                    action: "send_internal_notification",
+                    data: {
+                      customerName: paymentRecord.customer.name,
+                      customerDocument: paymentRecord.customer.document,
+                      customerEmail: paymentRecord.customer.email,
+                      customerPhone: paymentRecord.customer.phone,
+                      addressStreet: addressData?.street || "",
+                      addressNumber: addressData?.number || "",
+                      addressComplement: addressData?.complement || "",
+                      addressNeighborhood: addressData?.neighborhood || "",
+                      addressCity: addressData?.city || "",
+                      addressState: addressData?.state || "",
+                      addressCep: addressData?.cep || "",
+                      planName: paymentRecord.subscription.plan.name,
+                      planType: paymentRecord.subscription.billing_period === "mensal" ? "monthly" : "yearly",
+                      planPrice: paymentRecord.amount,
+                      subscriptionId: paymentRecord.subscription.id,
+                      subscriptionStartDate: startedAt.toISOString(),
+                      subscriptionEndDate: expiresAt.toISOString(),
+                      paymentId: paymentRecord.id,
+                      mercadoPagoPaymentId: data.id.toString(),
+                      paymentMethod: data.payment_method_id,
+                      installments: data.installments,
+                      approvalDate: data.date_approved || new Date().toISOString(),
+                    },
+                    paymentId: paymentRecord.id,
+                    subscriptionId: paymentRecord.subscription.id,
+                  }),
+                });
+
+                console.log("Emails sent successfully for approved payment");
+              }
+            }
+          } catch (emailError) {
+            console.error("Error sending emails after approval:", emailError);
+          }
+        }
       } catch (dbError) {
         console.error("Error updating payment in database:", dbError);
       }
