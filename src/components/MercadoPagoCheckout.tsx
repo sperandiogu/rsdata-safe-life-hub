@@ -63,9 +63,9 @@ export function MercadoPagoCheckout({
     paymentMethods: {
       creditCard: "all",
       debitCard: "all",
-      ticket: "none",
-      bankTransfer: "none",
-      atm: "none",
+      ticket: [],
+      bankTransfer: [],
+      atm: [],
     },
     visual: {
       style: {
