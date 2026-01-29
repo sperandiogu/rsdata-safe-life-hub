@@ -7,6 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { MercadoPagoCheckout } from "@/components/MercadoPagoCheckout";
 import { createPaymentPreference, generateExternalReference } from "@/lib/mercadopago";
 import { validateDocument } from "@/lib/validators";
+import {
+  findOrCreateCustomer,
+  createOrUpdateAddress,
+  getPlanByPlanId,
+  createSubscription,
+  createPayment
+} from "@/lib/supabase-db";
 import { ArrowLeft, FileText, Loader2, Shield, CreditCard, AlertCircle } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -158,46 +165,39 @@ export default function FormularioAssinatura() {
   };
 
   const savePaymentToDatabase = async (externalReference: string, mpPreferenceId: string) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
     try {
-      const response = await fetch(`${supabaseUrl}/rest/v1/payments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabaseAnonKey}`,
-          "apikey": supabaseAnonKey,
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify({
-          external_reference: externalReference,
-          mp_preference_id: mpPreferenceId,
-          status: "pending",
-          plan_name: planData.planName,
-          plan_type: planData.planType,
-          amount: planData.price,
-          customer_name: formData.nomeRazaoSocial,
-          customer_email: formData.email.toLowerCase(),
-          customer_document: formData.cpfCnpj,
-          customer_phone: formData.telefone,
-          customer_address: {
-            cep: formData.cep,
-            street: formData.rua,
-            number: formData.numero,
-            complement: formData.complemento || null,
-            neighborhood: formData.bairro,
-            city: formData.cidade,
-            state: formData.estado.toUpperCase(),
-          }
-        })
+      const customerId = await findOrCreateCustomer({
+        name: formData.nomeRazaoSocial,
+        document: formData.cpfCnpj,
+        email: formData.email,
+        phone: formData.telefone,
       });
 
-      if (!response.ok) {
-        console.error("Error saving payment to database");
-      }
+      await createOrUpdateAddress(customerId, {
+        cep: formData.cep,
+        street: formData.rua,
+        number: formData.numero,
+        complement: formData.complemento || null,
+        neighborhood: formData.bairro,
+        city: formData.cidade,
+        state: formData.estado,
+      });
+
+      const planUuid = await getPlanByPlanId(planData.planId);
+
+      const billingPeriod = planData.planType.toLowerCase() === 'anual' ? 'anual' : 'mensal';
+      const subscriptionId = await createSubscription(customerId, planUuid, billingPeriod);
+
+      await createPayment({
+        externalReference,
+        mpPreferenceId,
+        customerId,
+        subscriptionId,
+        amount: planData.price,
+      });
     } catch (error) {
-      console.error("Error saving payment:", error);
+      console.error("Error saving payment to database:", error);
+      throw error;
     }
   };
 

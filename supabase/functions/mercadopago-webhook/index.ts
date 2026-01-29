@@ -93,30 +93,84 @@ Deno.serve(async (req: Request) => {
         if (payment.status === "approved") {
           const { data: paymentRecord } = await supabase
             .from("payments")
-            .select("*")
+            .select(`
+              *,
+              customer:customers(*),
+              subscription:subscriptions(
+                *,
+                plan:plans(*)
+              )
+            `)
             .eq("external_reference", externalReference)
-            .single();
+            .maybeSingle();
 
-          if (paymentRecord) {
+          if (paymentRecord && paymentRecord.subscription) {
+            const startedAt = new Date();
+            let expiresAt = new Date();
+
+            if (paymentRecord.subscription.billing_period === 'mensal') {
+              expiresAt.setDate(expiresAt.getDate() + 30);
+            } else {
+              expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+            }
+
+            const { error: subscriptionError } = await supabase
+              .from("subscriptions")
+              .update({
+                status: 'active',
+                started_at: startedAt.toISOString(),
+                expires_at: expiresAt.toISOString(),
+              })
+              .eq("id", paymentRecord.subscription.id);
+
+            if (subscriptionError) {
+              console.error("Error activating subscription:", subscriptionError);
+            } else {
+              console.log("Subscription activated successfully");
+            }
+
+            const { data: addressData } = await supabase
+              .from("addresses")
+              .select("*")
+              .eq("customer_id", paymentRecord.customer_id)
+              .eq("is_default", true)
+              .maybeSingle();
+
             const makeWebhookUrl = "https://hook.us2.make.com/0itcp73mvrj2gh4pke27jxoc2xkfqt1h";
 
             const webhookPayload = {
               lead: {
-                tipoCliente: paymentRecord.customer_document.replace(/\D/g, "").length === 14 ? "PJ" : "PF",
-                documento: paymentRecord.customer_document,
-                documentoLimpo: paymentRecord.customer_document.replace(/\D/g, ""),
-                nome: paymentRecord.customer_name,
-                telefone: paymentRecord.customer_phone,
-                email: paymentRecord.customer_email,
+                tipoCliente: paymentRecord.customer.document_type,
+                documento: paymentRecord.customer.document,
+                documentoLimpo: paymentRecord.customer.document,
+                nome: paymentRecord.customer.name,
+                telefone: paymentRecord.customer.phone,
+                email: paymentRecord.customer.email,
                 observacoes: null,
               },
-              endereco: paymentRecord.customer_address,
+              endereco: addressData ? {
+                cep: addressData.cep,
+                rua: addressData.street,
+                numero: addressData.number,
+                complemento: addressData.complement,
+                bairro: addressData.neighborhood,
+                cidade: addressData.city,
+                estado: addressData.state,
+                enderecoCompleto: `${addressData.street}, ${addressData.number}${addressData.complement ? `, ${addressData.complement}` : ''}, ${addressData.neighborhood}, ${addressData.city}/${addressData.state}, CEP: ${addressData.cep}`
+              } : null,
               plano: {
-                nome: paymentRecord.plan_name,
-                tipo: paymentRecord.plan_type,
+                nome: paymentRecord.subscription.plan.name,
+                tipo: paymentRecord.subscription.billing_period === 'anual' ? 'Anual' : 'Mensal',
                 valor: paymentRecord.amount,
                 valorFormatado: `R$ ${paymentRecord.amount.toFixed(2).replace(".", ",")}`,
-                categoria: paymentRecord.plan_type === "Anual" ? "ANUAL" : "MENSAL",
+                categoria: paymentRecord.subscription.billing_period === 'anual' ? "ANUAL" : "MENSAL",
+              },
+              assinatura: {
+                id: paymentRecord.subscription.id,
+                status: 'active',
+                inicioEm: startedAt.toISOString(),
+                expiraEm: expiresAt.toISOString(),
+                periodo: paymentRecord.subscription.billing_period,
               },
               pagamento: {
                 id: payment.id,
