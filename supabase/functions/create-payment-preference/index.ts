@@ -46,57 +46,26 @@ async function createRecurringSubscription(
   const cleanDocument = customer.document.replace(/\D/g, "");
   const isCompany = cleanDocument.length === 14;
 
-  const preapprovalPlan = {
-    reason: `RSData - Plano ${plan.name} (Mensal)`,
-    auto_recurring: {
-      frequency: 1,
-      frequency_type: "months",
-      transaction_amount: plan.price,
-      currency_id: "BRL",
-      free_trial: {
-        frequency: 0,
-        frequency_type: "months"
-      }
-    },
-    payment_methods_allowed: {
-      payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
-      payment_methods: []
-    },
-    back_url: backUrls.success,
-  };
-
-  const planResponse = await fetch("https://api.mercadopago.com/preapproval_plan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(preapprovalPlan),
-  });
-
-  const planData = await planResponse.json();
-
-  if (!planResponse.ok) {
-    console.error("Failed to create preapproval plan:", planData);
-    throw new Error("Failed to create subscription plan");
-  }
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() + 1);
 
   const preapproval = {
-    preapproval_plan_id: planData.id,
     reason: `RSData - Plano ${plan.name} (Mensal)`,
     external_reference: externalReference,
     payer_email: customer.email,
-    card_token_id: null,
     auto_recurring: {
       frequency: 1,
       frequency_type: "months",
-      start_date: new Date().toISOString(),
+      start_date: startDate.toISOString(),
+      end_date: null,
       transaction_amount: plan.price,
       currency_id: "BRL",
     },
     back_url: backUrls.success,
     status: "pending",
   };
+
+  console.log("Creating preapproval with data:", JSON.stringify(preapproval, null, 2));
 
   const subscriptionResponse = await fetch("https://api.mercadopago.com/preapproval", {
     method: "POST",
@@ -109,15 +78,17 @@ async function createRecurringSubscription(
 
   const subscriptionData = await subscriptionResponse.json();
 
+  console.log("Subscription response:", JSON.stringify(subscriptionData, null, 2));
+
   if (!subscriptionResponse.ok) {
     console.error("Failed to create subscription:", subscriptionData);
-    throw new Error("Failed to create subscription");
+    throw new Error(`Failed to create subscription: ${JSON.stringify(subscriptionData)}`);
   }
 
   return {
     subscriptionId: subscriptionData.id,
     initPoint: subscriptionData.init_point,
-    planId: planData.id,
+    planId: null,
   };
 }
 
