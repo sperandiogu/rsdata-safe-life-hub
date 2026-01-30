@@ -14,6 +14,8 @@ interface MercadoPagoCheckoutProps {
   customerDocument: string;
   customerName: string;
   externalReference: string;
+  subscriptionId?: string;
+  isSubscription?: boolean;
   onReady?: () => void;
   onError?: (error: Error) => void;
 }
@@ -27,6 +29,8 @@ export function MercadoPagoCheckout({
   customerDocument,
   customerName,
   externalReference,
+  subscriptionId,
+  isSubscription = false,
   onReady,
   onError,
 }: MercadoPagoCheckoutProps) {
@@ -51,7 +55,12 @@ export function MercadoPagoCheckout({
     }
   }, [onError]);
 
-  const initialization = {
+  const initialization = isSubscription ? {
+    amount: amount,
+    payer: {
+      email: customerEmail,
+    },
+  } : {
     amount: amount,
     preferenceId: preferenceId,
     payer: {
@@ -81,34 +90,66 @@ export function MercadoPagoCheckout({
       const cleanDocument = customerDocument.replace(/\D/g, "");
       const isCompany = cleanDocument.length === 14;
 
-      const paymentData = {
-        formData: {
-          token: formData.formData.token as string,
-          issuer_id: String(formData.formData.issuer_id || ""),
-          payment_method_id: formData.formData.payment_method_id as string,
-          transaction_amount: amount,
-          installments: Number(formData.formData.installments) || 1,
-          payer: {
-            email: customerEmail,
-            identification: {
-              type: isCompany ? "CNPJ" : "CPF",
-              number: cleanDocument,
+      if (isSubscription) {
+        const subscriptionData = {
+          cardToken: formData.formData.token as string,
+          email: customerEmail,
+          amount: amount,
+          planName: planName,
+          externalReference: externalReference,
+          subscriptionId: subscriptionId,
+        };
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/create-authorized-subscription`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify(subscriptionData),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to create subscription");
+        }
+
+        const result = await response.json();
+
+        navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&subscription_id=${result.subscriptionId}`);
+      } else {
+        const paymentData = {
+          formData: {
+            token: formData.formData.token as string,
+            issuer_id: String(formData.formData.issuer_id || ""),
+            payment_method_id: formData.formData.payment_method_id as string,
+            transaction_amount: amount,
+            installments: Number(formData.formData.installments) || 1,
+            payer: {
+              email: customerEmail,
+              identification: {
+                type: isCompany ? "CNPJ" : "CPF",
+                number: cleanDocument,
+              },
             },
           },
-        },
-        externalReference,
-        planName,
-        planType,
-      };
+          externalReference,
+          planName,
+          planType,
+        };
 
-      const result = await processCardPayment(paymentData);
+        const result = await processCardPayment(paymentData);
 
-      if (result.status === "approved") {
-        navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&payment_id=${result.id}`);
-      } else if (result.status === "pending" || result.status === "in_process") {
-        navigate(`/pagamento-confirmado?status=pending&external_reference=${externalReference}&payment_id=${result.id}`);
-      } else {
-        onError?.(new Error(`Pagamento ${result.status}: ${result.status_detail}`));
+        if (result.status === "approved") {
+          navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&payment_id=${result.id}`);
+        } else if (result.status === "pending" || result.status === "in_process") {
+          navigate(`/pagamento-confirmado?status=pending&external_reference=${externalReference}&payment_id=${result.id}`);
+        } else {
+          onError?.(new Error(`Pagamento ${result.status}: ${result.status_detail}`));
+        }
       }
     } catch (error) {
       console.error("Error processing payment:", error);

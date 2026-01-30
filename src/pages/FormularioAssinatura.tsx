@@ -35,6 +35,7 @@ export default function FormularioAssinatura() {
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("form");
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [externalReference, setExternalReference] = useState<string>("");
+  const [subscriptionId, setSubscriptionId] = useState<string>("");
   const [isCreatingPreference, setIsCreatingPreference] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<"one_time" | "subscription" | null>(null);
@@ -305,46 +306,59 @@ export default function FormularioAssinatura() {
 
       const externalReference = generateExternalReference(planData.planId);
 
-      const { customerId, subscriptionId } = await createDatabaseRecords(externalReference);
+      const { customerId, subscriptionId: dbSubscriptionId } = await createDatabaseRecords(externalReference);
 
-      const preferenceResponse = await createPaymentPreference({
-        plan: {
-          name: planData.planName,
-          type: planData.planType,
-          price: planData.price,
-          planId: planData.planId,
-        },
-        customer: {
-          email: formData.email.toLowerCase(),
-          name: formData.nomeRazaoSocial,
-          document: formData.cpfCnpj,
-          phone: formData.telefone,
-          address: {
-            cep: formData.cep,
-            street: formData.rua,
-            number: formData.numero,
-            complement: formData.complemento || null,
-            neighborhood: formData.bairro,
-            city: formData.cidade,
-            state: formData.estado.toUpperCase(),
-          },
-        },
-        externalReference,
-        subscriptionId,
-      });
+      const isMonthly = planData.planType.toLowerCase() === "mensal";
 
-      await savePaymentToDatabase(
-        externalReference,
-        preferenceResponse.preferenceId || preferenceResponse.subscriptionId,
-        customerId,
-        subscriptionId
-      );
+      if (isMonthly) {
+        await savePaymentToDatabase(
+          externalReference,
+          "",
+          customerId,
+          dbSubscriptionId
+        );
 
-      if (preferenceResponse.type === "subscription" && preferenceResponse.initPoint) {
-        window.location.href = preferenceResponse.initPoint;
+        setPaymentType("subscription");
+        setPreferenceId(externalReference);
+        setExternalReference(externalReference);
+        setSubscriptionId(dbSubscriptionId);
+        setCurrentStep("payment");
       } else {
-        setPaymentType(preferenceResponse.type as "one_time" | "subscription");
-        setPreferenceId(preferenceResponse.preferenceId || preferenceResponse.subscriptionId);
+        const preferenceResponse = await createPaymentPreference({
+          plan: {
+            name: planData.planName,
+            type: planData.planType,
+            price: planData.price,
+            planId: planData.planId,
+          },
+          customer: {
+            email: formData.email.toLowerCase(),
+            name: formData.nomeRazaoSocial,
+            document: formData.cpfCnpj,
+            phone: formData.telefone,
+            address: {
+              cep: formData.cep,
+              street: formData.rua,
+              number: formData.numero,
+              complement: formData.complemento || null,
+              neighborhood: formData.bairro,
+              city: formData.cidade,
+              state: formData.estado.toUpperCase(),
+            },
+          },
+          externalReference,
+          subscriptionId: dbSubscriptionId,
+        });
+
+        await savePaymentToDatabase(
+          externalReference,
+          preferenceResponse.preferenceId || "",
+          customerId,
+          dbSubscriptionId
+        );
+
+        setPaymentType("one_time");
+        setPreferenceId(preferenceResponse.preferenceId || "");
         setExternalReference(externalReference);
         setCurrentStep("payment");
       }
@@ -361,6 +375,7 @@ export default function FormularioAssinatura() {
       setCurrentStep("form");
       setPreferenceId(null);
       setExternalReference("");
+      setSubscriptionId("");
       setPaymentError(null);
       setPaymentType(null);
     } else {
@@ -825,6 +840,8 @@ export default function FormularioAssinatura() {
                     customerDocument={formData.cpfCnpj}
                     customerName={formData.nomeRazaoSocial}
                     externalReference={externalReference}
+                    subscriptionId={subscriptionId}
+                    isSubscription={paymentType === "subscription"}
                     onReady={() => console.log("MercadoPago checkout ready")}
                     onError={(error) => {
                       console.error("MercadoPago error:", error);
