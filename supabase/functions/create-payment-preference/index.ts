@@ -61,7 +61,7 @@ async function createRecurringSubscription(
       transaction_amount: plan.price,
       currency_id: "BRL",
     },
-    back_url: backUrls.success,
+    back_url: `${backUrls.success}&preapproval_id=$init_point_preapproval_id`,
     status: "pending",
   };
 
@@ -195,7 +195,7 @@ Deno.serve(async (req: Request) => {
     const origin = req.headers.get("origin") || "https://cadastro.rsdata.com.br";
 
     const backUrls = {
-      success: `${origin}/pagamento-confirmado?status=approved&external_reference=${reference}`,
+      success: `${origin}/pagamento-confirmado?status=approved&external_reference=${reference}&subscription_id=${subscriptionId || ''}`,
       failure: `${origin}/pagamento-confirmado?status=rejected&external_reference=${reference}`,
       pending: `${origin}/pagamento-confirmado?status=pending&external_reference=${reference}`,
     };
