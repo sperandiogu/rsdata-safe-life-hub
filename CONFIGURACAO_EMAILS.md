@@ -24,7 +24,7 @@ O sistema já está configurado para enviar emails automaticamente quando um pag
 
 **Verificar domínio:**
 - Certifique-se de que o domínio `rsdata.com.br` está verificado no Postmark
-- Vá em **Sender Signatures** e confirme que `store@rsdata.com.br` está ativo
+- Vá em **Sender Signatures** e confirme que `loja@rsdata.com.br` está ativo
 
 ### 2. Configurar Webhook no Mercado Pago
 
@@ -69,7 +69,7 @@ Se não existir, adicione:
 3. Sistema atualiza o banco de dados
 4. ✅ EMAILS SÃO ENVIADOS IMEDIATAMENTE
    - Email de confirmação para o cliente
-   - Email de notificação para store@rsdata.com.br
+   - Email de notificação para loja@rsdata.com.br
 5. Webhook do Mercado Pago confirma (backup)
 ```
 
@@ -83,7 +83,7 @@ Se não existir, adicione:
 5. Sistema atualiza status para "approved"
 6. ✅ EMAILS SÃO ENVIADOS
    - Email de confirmação para o cliente
-   - Email de notificação para store@rsdata.com.br
+   - Email de notificação para loja@rsdata.com.br
 ```
 
 ## Testando o Sistema
@@ -161,7 +161,7 @@ LIMIT 10;
   - Informação sobre próximos passos (acesso em até 7 dias)
   - Link para WhatsApp de suporte
 
-### Email Interno (para store@rsdata.com.br)
+### Email Interno (para loja@rsdata.com.br)
 
 - **Assunto:** "Nova Assinatura: [Nome Cliente] - [Plano]"
 - **Conteúdo:**
@@ -172,7 +172,7 @@ LIMIT 10;
 
 ## Contatos de Suporte
 
-- Email: store@rsdata.com.br
+- Email: loja@rsdata.com.br
 - WhatsApp: +55 51 3720-1416
 
 ## URLs Importantes

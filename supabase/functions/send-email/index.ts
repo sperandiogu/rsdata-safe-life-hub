@@ -444,7 +444,7 @@ async function sendEmailWithPostmark(
   subject: string,
   htmlBody: string,
   textBody: string,
-  from: string = "store@rsdata.com.br"
+  from: string = "loja@rsdata.com.br"
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const postmarkToken = Deno.env.get("POSTMARK_SERVER_TOKEN");
 
@@ -539,7 +539,7 @@ Deno.serve(async (req: Request) => {
       const htmlBody = generateInternalNotificationHtml(data);
       const textBody = generateInternalNotificationText(data);
       const subject = `Nova Assinatura: ${data.customerName} - ${data.planName}`;
-      const internalEmail = "store@rsdata.com.br";
+      const internalEmail = "loja@rsdata.com.br";
 
       const result = await sendEmailWithPostmark(internalEmail, subject, htmlBody, textBody);
 
