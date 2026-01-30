@@ -37,6 +37,7 @@ export default function FormularioAssinatura() {
   const [externalReference, setExternalReference] = useState<string>("");
   const [isCreatingPreference, setIsCreatingPreference] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentType, setPaymentType] = useState<"one_time" | "subscription" | null>(null);
 
   const [formData, setFormData] = useState({
     nomeRazaoSocial: "",
@@ -339,9 +340,14 @@ export default function FormularioAssinatura() {
         subscriptionId
       );
 
-      setPreferenceId(preferenceResponse.preferenceId || preferenceResponse.subscriptionId);
-      setExternalReference(externalReference);
-      setCurrentStep("payment");
+      if (preferenceResponse.type === "subscription" && preferenceResponse.initPoint) {
+        window.location.href = preferenceResponse.initPoint;
+      } else {
+        setPaymentType(preferenceResponse.type as "one_time" | "subscription");
+        setPreferenceId(preferenceResponse.preferenceId || preferenceResponse.subscriptionId);
+        setExternalReference(externalReference);
+        setCurrentStep("payment");
+      }
     } catch (error) {
       console.error("Erro ao criar preferência de pagamento:", error);
       setPaymentError("Ocorreu um erro ao processar seu pedido. Por favor, tente novamente.");
@@ -356,6 +362,7 @@ export default function FormularioAssinatura() {
       setPreferenceId(null);
       setExternalReference("");
       setPaymentError(null);
+      setPaymentType(null);
     } else {
       navigate("/");
     }
