@@ -7,6 +7,158 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+async function processSubscriptionEvent(
+  supabase: any,
+  accessToken: string,
+  subscriptionId: string,
+  supabaseUrl: string,
+  supabaseServiceKey: string
+) {
+  const subscriptionResponse = await fetch(
+    `https://api.mercadopago.com/preapproval/${subscriptionId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!subscriptionResponse.ok) {
+    console.error("Failed to fetch subscription details");
+    return;
+  }
+
+  const subscription = await subscriptionResponse.json();
+  console.log("Subscription details:", subscription);
+
+  const { data: subscriptionRecord } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("mp_subscription_id", subscriptionId)
+    .maybeSingle();
+
+  if (!subscriptionRecord) {
+    console.log("Subscription not found in database, checking by external_reference");
+
+    const { data: subByRef } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("id", subscription.external_reference)
+      .maybeSingle();
+
+    if (subByRef) {
+      await supabase
+        .from("subscriptions")
+        .update({ mp_subscription_id: subscriptionId })
+        .eq("id", subByRef.id);
+    }
+  }
+
+  if (subscription.status === "authorized") {
+    const { data: subRecord } = await supabase
+      .from("subscriptions")
+      .select("*, customer:customers(*), plan:plans(*)")
+      .eq("mp_subscription_id", subscriptionId)
+      .maybeSingle();
+
+    if (subRecord) {
+      const startedAt = new Date();
+      let expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      await supabase
+        .from("subscriptions")
+        .update({
+          status: "active",
+          started_at: startedAt.toISOString(),
+          expires_at: expiresAt.toISOString(),
+        })
+        .eq("id", subRecord.id);
+
+      console.log("Subscription activated successfully");
+    }
+  } else if (subscription.status === "cancelled") {
+    await supabase
+      .from("subscriptions")
+      .update({
+        status: "cancelled",
+        cancelled_at: new Date().toISOString(),
+      })
+      .eq("mp_subscription_id", subscriptionId);
+
+    console.log("Subscription cancelled");
+  }
+}
+
+async function processRecurringPayment(
+  supabase: any,
+  accessToken: string,
+  paymentId: string,
+  supabaseUrl: string,
+  supabaseServiceKey: string
+) {
+  const paymentResponse = await fetch(
+    `https://api.mercadopago.com/authorized_payments/${paymentId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!paymentResponse.ok) {
+    console.error("Failed to fetch recurring payment details");
+    return;
+  }
+
+  const payment = await paymentResponse.json();
+  console.log("Recurring payment details:", payment);
+
+  if (payment.status === "approved") {
+    const { data: subscriptionRecord } = await supabase
+      .from("subscriptions")
+      .select("*, customer:customers(*), plan:plans(*)")
+      .eq("mp_subscription_id", payment.preapproval_id)
+      .maybeSingle();
+
+    if (subscriptionRecord) {
+      const { error: paymentError } = await supabase.from("payments").insert({
+        external_reference: `recurring_${payment.id}`,
+        mp_payment_id: payment.id.toString(),
+        customer_id: subscriptionRecord.customer_id,
+        subscription_id: subscriptionRecord.id,
+        amount: payment.transaction_amount,
+        status: payment.status,
+        status_detail: payment.status_detail || "approved",
+        payment_method: payment.payment_method_id,
+        payment_type: "recurring",
+        installments: 1,
+        paid_at: payment.date_created,
+        metadata: {
+          preapproval_id: payment.preapproval_id,
+          recurring: true,
+        },
+      });
+
+      if (paymentError) {
+        console.error("Error recording recurring payment:", paymentError);
+      }
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      await supabase
+        .from("subscriptions")
+        .update({
+          expires_at: expiresAt.toISOString(),
+        })
+        .eq("id", subscriptionRecord.id);
+
+      console.log("Subscription renewed successfully");
+    }
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -24,7 +176,7 @@ Deno.serve(async (req: Request) => {
 
     const url = new URL(req.url);
     const topic = url.searchParams.get("topic") || url.searchParams.get("type");
-    const paymentId = url.searchParams.get("data.id") || url.searchParams.get("id");
+    const resourceId = url.searchParams.get("data.id") || url.searchParams.get("id");
 
     let body = {};
     try {
@@ -33,11 +185,31 @@ Deno.serve(async (req: Request) => {
       // Body may be empty for some notifications
     }
 
-    console.log("Webhook received:", { topic, paymentId, body });
+    console.log("Webhook received:", { topic, resourceId, body });
 
-    if (topic === "payment" && paymentId) {
+    if (topic === "subscription" || topic === "preapproval") {
+      if (resourceId) {
+        await processSubscriptionEvent(
+          supabase,
+          accessToken!,
+          resourceId,
+          supabaseUrl,
+          supabaseServiceKey
+        );
+      }
+    } else if (topic === "subscription_authorized_payment" || topic === "subscription_preapproval_authorized_payment") {
+      if (resourceId) {
+        await processRecurringPayment(
+          supabase,
+          accessToken!,
+          resourceId,
+          supabaseUrl,
+          supabaseServiceKey
+        );
+      }
+    } else if (topic === "payment" && resourceId) {
       const paymentResponse = await fetch(
-        `https://api.mercadopago.com/v1/payments/${paymentId}`,
+        `https://api.mercadopago.com/v1/payments/${resourceId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

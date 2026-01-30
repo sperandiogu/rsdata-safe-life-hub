@@ -164,7 +164,7 @@ export default function FormularioAssinatura() {
     }));
   };
 
-  const savePaymentToDatabase = async (externalReference: string, mpPreferenceId: string) => {
+  const createDatabaseRecords = async (externalReference: string) => {
     try {
       const customerId = await findOrCreateCustomer({
         name: formData.nomeRazaoSocial,
@@ -188,6 +188,20 @@ export default function FormularioAssinatura() {
       const billingPeriod = planData.planType.toLowerCase() === 'anual' ? 'anual' : 'mensal';
       const subscriptionId = await createSubscription(customerId, planUuid, billingPeriod);
 
+      return { customerId, subscriptionId };
+    } catch (error) {
+      console.error("Error creating database records:", error);
+      throw error;
+    }
+  };
+
+  const savePaymentToDatabase = async (
+    externalReference: string,
+    mpPreferenceId: string,
+    customerId: string,
+    subscriptionId: string
+  ) => {
+    try {
       await createPayment({
         externalReference,
         mpPreferenceId,
@@ -290,6 +304,8 @@ export default function FormularioAssinatura() {
 
       const externalReference = generateExternalReference(planData.planId);
 
+      const { customerId, subscriptionId } = await createDatabaseRecords(externalReference);
+
       const preferenceResponse = await createPaymentPreference({
         plan: {
           name: planData.planName,
@@ -313,11 +329,17 @@ export default function FormularioAssinatura() {
           },
         },
         externalReference,
+        subscriptionId,
       });
 
-      await savePaymentToDatabase(externalReference, preferenceResponse.preferenceId);
+      await savePaymentToDatabase(
+        externalReference,
+        preferenceResponse.preferenceId || preferenceResponse.subscriptionId,
+        customerId,
+        subscriptionId
+      );
 
-      setPreferenceId(preferenceResponse.preferenceId);
+      setPreferenceId(preferenceResponse.preferenceId || preferenceResponse.subscriptionId);
       setExternalReference(externalReference);
       setCurrentStep("payment");
     } catch (error) {

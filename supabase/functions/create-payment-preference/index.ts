@@ -33,6 +33,167 @@ interface RequestPayload {
   plan: PlanInfo;
   customer: CustomerInfo;
   externalReference?: string;
+  subscriptionId?: string;
+}
+
+async function createRecurringSubscription(
+  accessToken: string,
+  plan: PlanInfo,
+  customer: CustomerInfo,
+  externalReference: string,
+  backUrls: { success: string; failure: string; pending: string }
+) {
+  const cleanDocument = customer.document.replace(/\D/g, "");
+  const isCompany = cleanDocument.length === 14;
+
+  const preapprovalPlan = {
+    reason: `RSData - Plano ${plan.name} (Mensal)`,
+    auto_recurring: {
+      frequency: 1,
+      frequency_type: "months",
+      transaction_amount: plan.price,
+      currency_id: "BRL",
+      free_trial: {
+        frequency: 0,
+        frequency_type: "months"
+      }
+    },
+    payment_methods_allowed: {
+      payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
+      payment_methods: []
+    },
+    back_url: backUrls.success,
+  };
+
+  const planResponse = await fetch("https://api.mercadopago.com/preapproval_plan", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(preapprovalPlan),
+  });
+
+  const planData = await planResponse.json();
+
+  if (!planResponse.ok) {
+    console.error("Failed to create preapproval plan:", planData);
+    throw new Error("Failed to create subscription plan");
+  }
+
+  const preapproval = {
+    preapproval_plan_id: planData.id,
+    reason: `RSData - Plano ${plan.name} (Mensal)`,
+    external_reference: externalReference,
+    payer_email: customer.email,
+    card_token_id: null,
+    auto_recurring: {
+      frequency: 1,
+      frequency_type: "months",
+      start_date: new Date().toISOString(),
+      transaction_amount: plan.price,
+      currency_id: "BRL",
+    },
+    back_url: backUrls.success,
+    status: "pending",
+  };
+
+  const subscriptionResponse = await fetch("https://api.mercadopago.com/preapproval", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(preapproval),
+  });
+
+  const subscriptionData = await subscriptionResponse.json();
+
+  if (!subscriptionResponse.ok) {
+    console.error("Failed to create subscription:", subscriptionData);
+    throw new Error("Failed to create subscription");
+  }
+
+  return {
+    subscriptionId: subscriptionData.id,
+    initPoint: subscriptionData.init_point,
+    planId: planData.id,
+  };
+}
+
+async function createOneTimePayment(
+  accessToken: string,
+  plan: PlanInfo,
+  customer: CustomerInfo,
+  externalReference: string,
+  backUrls: { success: string; failure: string; pending: string },
+  notificationUrl: string
+) {
+  const cleanDocument = customer.document.replace(/\D/g, "");
+  const isCompany = cleanDocument.length === 14;
+
+  const preference = {
+    items: [
+      {
+        id: plan.planId,
+        title: `RSData - Plano ${plan.name} (${plan.type})`,
+        description: `Assinatura do plano ${plan.name} - ${plan.type}`,
+        quantity: 1,
+        currency_id: "BRL",
+        unit_price: plan.price,
+      },
+    ],
+    payer: {
+      email: customer.email,
+      name: customer.name,
+      identification: {
+        type: isCompany ? "CNPJ" : "CPF",
+        number: cleanDocument,
+      },
+      phone: {
+        area_code: customer.phone.replace(/\D/g, "").substring(0, 2),
+        number: customer.phone.replace(/\D/g, "").substring(2),
+      },
+      address: {
+        zip_code: customer.address.cep.replace(/\D/g, ""),
+        street_name: customer.address.street,
+        street_number: customer.address.number,
+      },
+    },
+    back_urls: backUrls,
+    auto_return: "approved",
+    external_reference: externalReference,
+    statement_descriptor: "RSDATA SST",
+    payment_methods: {
+      excluded_payment_methods: [],
+      excluded_payment_types: [],
+      installments: 12,
+      default_installments: 1,
+    },
+    binary_mode: false,
+    notification_url: notificationUrl,
+  };
+
+  const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(preference),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Mercado Pago API error:", data);
+    throw new Error("Failed to create payment preference");
+  }
+
+  return {
+    preferenceId: data.id,
+    initPoint: data.init_point,
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -57,94 +218,85 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload: RequestPayload = await req.json();
-    const { plan, customer, externalReference } = payload;
+    const { plan, customer, externalReference, subscriptionId } = payload;
 
-    const cleanDocument = customer.document.replace(/\D/g, "");
-    const isCompany = cleanDocument.length === 14;
+    const reference = externalReference || `rsdata_${Date.now()}`;
+    const origin = req.headers.get("origin") || "https://cadastro.rsdata.com.br";
 
-    const preference = {
-      items: [
-        {
-          id: plan.planId,
-          title: `RSData - Plano ${plan.name} (${plan.type})`,
-          description: `Assinatura do plano ${plan.name} - ${plan.type}`,
-          quantity: 1,
-          currency_id: "BRL",
-          unit_price: plan.price,
-        },
-      ],
-      payer: {
-        email: customer.email,
-        name: customer.name,
-        identification: {
-          type: isCompany ? "CNPJ" : "CPF",
-          number: cleanDocument,
-        },
-        phone: {
-          area_code: customer.phone.replace(/\D/g, "").substring(0, 2),
-          number: customer.phone.replace(/\D/g, "").substring(2),
-        },
-        address: {
-          zip_code: customer.address.cep.replace(/\D/g, ""),
-          street_name: customer.address.street,
-          street_number: customer.address.number,
-        },
-      },
-      back_urls: {
-        success: `${req.headers.get("origin")}/pagamento-confirmado?status=approved&external_reference=${externalReference || `rsdata_${Date.now()}`}`,
-        failure: `${req.headers.get("origin")}/pagamento-confirmado?status=rejected&external_reference=${externalReference || `rsdata_${Date.now()}`}`,
-        pending: `${req.headers.get("origin")}/pagamento-confirmado?status=pending&external_reference=${externalReference || `rsdata_${Date.now()}`}`,
-      },
-      auto_return: "approved",
-      external_reference: externalReference || `rsdata_${Date.now()}`,
-      statement_descriptor: "RSDATA SST",
-      payment_methods: {
-        excluded_payment_methods: [],
-        excluded_payment_types: [],
-        installments: 12,
-        default_installments: 1,
-      },
-      binary_mode: false,
-      notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`,
+    const backUrls = {
+      success: `${origin}/pagamento-confirmado?status=approved&external_reference=${reference}`,
+      failure: `${origin}/pagamento-confirmado?status=rejected&external_reference=${reference}`,
+      pending: `${origin}/pagamento-confirmado?status=pending&external_reference=${reference}`,
     };
 
-    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(preference),
-    });
+    const isMonthly = plan.type.toLowerCase() === "mensal";
 
-    const data = await response.json();
+    if (isMonthly) {
+      const result = await createRecurringSubscription(
+        accessToken,
+        plan,
+        customer,
+        reference,
+        backUrls
+      );
 
-    if (!response.ok) {
-      console.error("Mercado Pago API error:", data);
+      if (subscriptionId) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+        await fetch(`${supabaseUrl}/rest/v1/subscriptions?id=eq.${subscriptionId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseServiceKey!,
+            "Authorization": `Bearer ${supabaseServiceKey}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            mp_subscription_id: result.subscriptionId,
+            mp_preapproval_plan_id: result.planId,
+          }),
+        });
+      }
+
       return new Response(
-        JSON.stringify({ error: "Failed to create payment preference", details: data }),
+        JSON.stringify({
+          type: "subscription",
+          subscriptionId: result.subscriptionId,
+          planId: result.planId,
+          initPoint: result.initPoint,
+        }),
         {
-          status: response.status,
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    } else {
+      const result = await createOneTimePayment(
+        accessToken,
+        plan,
+        customer,
+        reference,
+        backUrls,
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`
+      );
+
+      return new Response(
+        JSON.stringify({
+          type: "one_time",
+          preferenceId: result.preferenceId,
+          initPoint: result.initPoint,
+        }),
+        {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
-
-    return new Response(
-      JSON.stringify({
-        preferenceId: data.id,
-        initPoint: data.init_point,
-        sandboxInitPoint: data.sandbox_init_point,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
   } catch (error) {
     console.error("Error creating payment preference:", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error", message: error.message }),
+      JSON.stringify({ error: "Internal server error", message: error instanceof Error ? error.message : "Unknown error" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

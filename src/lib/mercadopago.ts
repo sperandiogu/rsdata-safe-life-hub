@@ -23,12 +23,16 @@ export interface PaymentPreferenceRequest {
     };
   };
   externalReference?: string;
+  subscriptionId?: string;
 }
 
 export interface PaymentPreferenceResponse {
-  preferenceId: string;
+  type?: string;
+  preferenceId?: string;
+  subscriptionId?: string;
+  planId?: string;
   initPoint: string;
-  sandboxInitPoint: string;
+  sandboxInitPoint?: string;
 }
 
 export async function createPaymentPreference(
