@@ -234,6 +234,29 @@ Deno.serve(async (req: Request) => {
             }
 
             try {
+              const welcomeEmailResponse = await fetch(sendEmailUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  action: "send_welcome",
+                  data: {
+                    customerName: paymentRecord.customer.name,
+                    customerEmail: paymentRecord.customer.email,
+                    planName: paymentRecord.subscription.plan.name,
+                  },
+                  subscriptionId: paymentRecord.subscription.id,
+                }),
+              });
+              const welcomeEmailResult = await welcomeEmailResponse.json();
+              console.log("Welcome email:", welcomeEmailResult.success ? "sent" : "failed");
+            } catch (emailError) {
+              console.error("Error sending welcome email:", emailError);
+            }
+
+            try {
               const internalEmailResponse = await fetch(sendEmailUrl, {
                 method: "POST",
                 headers: {

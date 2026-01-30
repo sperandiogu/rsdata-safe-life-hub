@@ -12,7 +12,7 @@ interface EmailPayload {
   subject: string;
   htmlBody: string;
   textBody: string;
-  emailType: "customer_confirmation" | "internal_notification";
+  emailType: "customer_confirmation" | "internal_notification" | "welcome";
   paymentId?: string;
   subscriptionId?: string;
   metadata?: Record<string, unknown>;
@@ -51,6 +51,12 @@ interface InternalNotificationData {
   paymentMethod: string;
   installments: number;
   approvalDate: string;
+}
+
+interface WelcomeEmailData {
+  customerName: string;
+  customerEmail: string;
+  planName: string;
 }
 
 function formatCurrency(value: number): string {
@@ -439,6 +445,192 @@ Notificacao interna - RSData
 `;
 }
 
+function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-vindo à RSData</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #084D6C; padding: 30px 40px; text-align: center;">
+              <img src="https://cadastro.rsdata.com.br/rsdata-logo.png" alt="RSData" height="40" style="display: block; margin: 0 auto;">
+            </td>
+          </tr>
+
+          <!-- Welcome Icon -->
+          <tr>
+            <td style="padding: 40px 40px 20px; text-align: center;">
+              <div style="width: 70px; height: 70px; background-color: #084D6C; border-radius: 50%; display: inline-block; line-height: 70px;">
+                <span style="color: white; font-size: 36px;">&#128075;</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding: 0 40px 10px; text-align: center;">
+              <h1 style="margin: 0; color: #084D6C; font-size: 28px; font-weight: 600;">Bem-vindo à RSData!</h1>
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td style="padding: 20px 40px;">
+              <p style="margin: 0 0 15px; color: #374151; font-size: 16px; line-height: 1.6;">
+                Olá, <strong>${data.customerName}</strong>!
+              </p>
+              <p style="margin: 0 0 15px; color: #374151; font-size: 16px; line-height: 1.6;">
+                Seja muito bem-vindo(a) à <strong>RSData</strong>! Estamos muito felizes em tê-lo(a) conosco.
+              </p>
+              <p style="margin: 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                Você acaba de dar um passo importante para transformar a gestão do seu negócio com o plano <strong>${data.planName}</strong>.
+              </p>
+            </td>
+          </tr>
+
+          <!-- What's Next -->
+          <tr>
+            <td style="padding: 20px 40px;">
+              <div style="background-color: #f8fafc; border-radius: 8px; padding: 25px;">
+                <h2 style="margin: 0 0 15px; color: #084D6C; font-size: 18px; font-weight: 600;">Próximos Passos</h2>
+                <ol style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.8;">
+                  <li style="margin-bottom: 10px;">Nossa equipe já está trabalhando na configuração da sua conta</li>
+                  <li style="margin-bottom: 10px;">Em até <strong>7 dias úteis</strong>, você receberá um e-mail com suas credenciais de acesso</li>
+                  <li style="margin-bottom: 10px;">Assim que receber, você poderá fazer login e começar a usar todos os recursos do sistema</li>
+                  <li>Se precisar de ajuda, nossa equipe de suporte está à disposição</li>
+                </ol>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Features -->
+          <tr>
+            <td style="padding: 20px 40px;">
+              <h2 style="margin: 0 0 20px; color: #084D6C; font-size: 18px; font-weight: 600; text-align: center;">O que você pode esperar:</h2>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 15px; width: 50%; vertical-align: top;">
+                    <div style="text-align: center;">
+                      <div style="width: 50px; height: 50px; background-color: #eff6ff; border-radius: 50%; display: inline-block; line-height: 50px; margin-bottom: 10px;">
+                        <span style="color: #084D6C; font-size: 24px;">🚀</span>
+                      </div>
+                      <h3 style="margin: 0 0 8px; color: #111827; font-size: 14px; font-weight: 600;">Configuração Rápida</h3>
+                      <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">Sistema pronto para uso em poucos dias</p>
+                    </div>
+                  </td>
+                  <td style="padding: 15px; width: 50%; vertical-align: top;">
+                    <div style="text-align: center;">
+                      <div style="width: 50px; height: 50px; background-color: #eff6ff; border-radius: 50%; display: inline-block; line-height: 50px; margin-bottom: 10px;">
+                        <span style="color: #084D6C; font-size: 24px;">💼</span>
+                      </div>
+                      <h3 style="margin: 0 0 8px; color: #111827; font-size: 14px; font-weight: 600;">Gestão Completa</h3>
+                      <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">Todas as ferramentas em um só lugar</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px; width: 50%; vertical-align: top;">
+                    <div style="text-align: center;">
+                      <div style="width: 50px; height: 50px; background-color: #eff6ff; border-radius: 50%; display: inline-block; line-height: 50px; margin-bottom: 10px;">
+                        <span style="color: #084D6C; font-size: 24px;">🎓</span>
+                      </div>
+                      <h3 style="margin: 0 0 8px; color: #111827; font-size: 14px; font-weight: 600;">Treinamento</h3>
+                      <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">Suporte completo para sua equipe</p>
+                    </div>
+                  </td>
+                  <td style="padding: 15px; width: 50%; vertical-align: top;">
+                    <div style="text-align: center;">
+                      <div style="width: 50px; height: 50px; background-color: #eff6ff; border-radius: 50%; display: inline-block; line-height: 50px; margin-bottom: 10px;">
+                        <span style="color: #084D6C; font-size: 24px;">🔒</span>
+                      </div>
+                      <h3 style="margin: 0 0 8px; color: #111827; font-size: 14px; font-weight: 600;">Segurança</h3>
+                      <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">Seus dados sempre protegidos</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Support -->
+          <tr>
+            <td style="padding: 20px 40px 30px;">
+              <div style="background-color: #eff6ff; border-left: 4px solid #084D6C; padding: 20px; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0 0 15px; color: #374151; font-size: 14px; line-height: 1.6;">
+                  <strong style="color: #084D6C;">Precisa de ajuda?</strong><br>
+                  Nossa equipe está disponível para tirar suas dúvidas e auxiliar no que for necessário.
+                </p>
+                <a href="https://wa.me/555137201416" style="display: inline-block; background-color: #25D366; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500;">
+                  Fale conosco pelo WhatsApp
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0 0 10px; color: #6b7280; font-size: 12px;">
+                RSData - Soluções em Tecnologia
+              </p>
+              <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                Este e-mail foi enviado automaticamente. Por favor, não responda.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
+function generateWelcomeEmailText(data: WelcomeEmailData): string {
+  return `
+BEM-VINDO À RSDATA!
+
+Olá, ${data.customerName}!
+
+Seja muito bem-vindo(a) à RSData! Estamos muito felizes em tê-lo(a) conosco.
+
+Você acaba de dar um passo importante para transformar a gestão do seu negócio com o plano ${data.planName}.
+
+PRÓXIMOS PASSOS
+---------------
+1. Nossa equipe já está trabalhando na configuração da sua conta
+2. Em até 7 dias úteis, você receberá um e-mail com suas credenciais de acesso
+3. Assim que receber, você poderá fazer login e começar a usar todos os recursos do sistema
+4. Se precisar de ajuda, nossa equipe de suporte está à disposição
+
+O QUE VOCÊ PODE ESPERAR:
+------------------------
+🚀 Configuração Rápida - Sistema pronto para uso em poucos dias
+💼 Gestão Completa - Todas as ferramentas em um só lugar
+🎓 Treinamento - Suporte completo para sua equipe
+🔒 Segurança - Seus dados sempre protegidos
+
+PRECISA DE AJUDA?
+-----------------
+Nossa equipe está disponível para tirar suas dúvidas e auxiliar no que for necessário.
+Fale conosco pelo WhatsApp: https://wa.me/555137201416
+
+--
+RSData - Soluções em Tecnologia
+Este e-mail foi enviado automaticamente. Por favor, não responda.
+`;
+}
+
 async function sendEmailWithPostmark(
   to: string,
   subject: string,
@@ -547,6 +739,34 @@ Deno.serve(async (req: Request) => {
         recipient_email: internalEmail,
         email_type: "internal_notification",
         payment_id: paymentId,
+        subscription_id: subscriptionId,
+        status: result.success ? "sent" : "failed",
+        error_message: result.error || null,
+        metadata: { messageId: result.messageId, customerName: data.customerName },
+      });
+
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: result.success ? 200 : 500,
+      });
+    }
+
+    if (action === "send_welcome") {
+      const { data, subscriptionId } = payload as {
+        action: string;
+        data: WelcomeEmailData;
+        subscriptionId: string;
+      };
+
+      const htmlBody = generateWelcomeEmailHtml(data);
+      const textBody = generateWelcomeEmailText(data);
+      const subject = "Bem-vindo à RSData!";
+
+      const result = await sendEmailWithPostmark(data.customerEmail, subject, htmlBody, textBody);
+
+      await supabase.from("email_logs").insert({
+        recipient_email: data.customerEmail,
+        email_type: "welcome",
         subscription_id: subscriptionId,
         status: result.success ? "sent" : "failed",
         error_message: result.error || null,
