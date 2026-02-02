@@ -731,7 +731,7 @@ Deno.serve(async (req: Request) => {
       const htmlBody = generateInternalNotificationHtml(data);
       const textBody = generateInternalNotificationText(data);
       const subject = `Nova Assinatura: ${data.customerName} - ${data.planName}`;
-      const internalEmail = "loja@rsdata.com.br";
+      const internalEmail = "loja@rsdata.inf.br";
 
       const result = await sendEmailWithPostmark(internalEmail, subject, htmlBody, textBody);
 
