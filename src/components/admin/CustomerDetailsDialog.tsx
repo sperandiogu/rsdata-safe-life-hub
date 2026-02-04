@@ -84,9 +84,11 @@ interface CustomerDetails {
 }
 
 const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDialogProps) => {
-  const { data: customer, isLoading } = useQuery({
+  const { data: customer, isLoading, error: queryError } = useQuery({
     queryKey: ["customer-details", customerId],
     queryFn: async (): Promise<CustomerDetails | null> => {
+      console.log("Fetching customer details for:", customerId);
+
       const { data, error } = await supabase
         .from("customers")
         .select(`
@@ -132,36 +134,52 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
           )
         `)
         .eq("id", customerId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching customer:", error);
+        throw error;
+      }
+
+      if (!data) {
+        console.log("No customer found with ID:", customerId);
+        return null;
+      }
+
+      console.log("Customer data fetched:", data);
 
       let emailLogs: any[] = [];
 
-      if (data.payments.length > 0 || data.subscriptions.length > 0) {
+      if (data.payments?.length > 0 || data.subscriptions?.length > 0) {
         const conditions = [];
-        if (data.payments.length > 0) {
+        if (data.payments && data.payments.length > 0) {
           conditions.push(`payment_id.in.(${data.payments.map((p: any) => p.id).join(",")})`);
         }
-        if (data.subscriptions.length > 0) {
+        if (data.subscriptions && data.subscriptions.length > 0) {
           conditions.push(`subscription_id.in.(${data.subscriptions.map((s: any) => s.id).join(",")})`);
         }
 
-        const { data: logs } = await supabase
-          .from("email_logs")
-          .select("*")
-          .or(conditions.join(","))
-          .order("sent_at", { ascending: false });
+        if (conditions.length > 0) {
+          const { data: logs } = await supabase
+            .from("email_logs")
+            .select("*")
+            .or(conditions.join(","))
+            .order("sent_at", { ascending: false });
 
-        emailLogs = logs || [];
+          emailLogs = logs || [];
+        }
       }
 
       return {
         ...data,
+        addresses: data.addresses || [],
+        subscriptions: data.subscriptions || [],
+        payments: data.payments || [],
         email_logs: emailLogs,
       };
     },
     enabled: open && !!customerId,
+    retry: false,
   });
 
   const getStatusBadge = (status: string) => {
@@ -227,6 +245,14 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
           <div className="space-y-4">
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-64 w-full" />
+          </div>
+        ) : queryError ? (
+          <div className="text-center py-12">
+            <div className="text-red-600 mb-2">
+              <XCircle className="h-12 w-12 mx-auto mb-2" />
+              <p className="font-semibold">Erro ao carregar dados</p>
+            </div>
+            <p className="text-sm text-gray-500">{(queryError as Error).message}</p>
           </div>
         ) : customer ? (
           <ScrollArea className="h-[70vh] pr-4">

@@ -85,3 +85,38 @@ Status mapeados:
 - RLS habilitado em todas as tabelas
 - Senhas criptografadas no Supabase Auth
 - Tokens JWT para autenticação
+
+## Troubleshooting
+
+### Problema: "Cliente não encontrado"
+
+Se ao clicar em "Ver Detalhes" aparecer "Cliente não encontrado":
+
+1. **Verifique o Console do Navegador** (F12):
+   - Procure por logs como "Fetching customer details"
+   - Veja se há erros em vermelho
+
+2. **Execute o Script de Teste**:
+   - Abra o arquivo `TEST_DATA.sql`
+   - Execute no SQL Editor do Supabase
+   - Isso criará um cliente de teste se necessário
+
+3. **Verifique se está autenticado**:
+   - Faça logout e login novamente em `/admin/login`
+   - Certifique-se de que seu usuário está na tabela `admin_users`
+
+4. **Leia o guia completo**:
+   - Abra o arquivo `DEBUG_CUSTOMER_DETAILS.md`
+   - Siga todos os passos de diagnóstico
+
+### Problema: Não consigo fazer login
+
+1. Verifique se criou o usuário em Authentication > Users
+2. Verifique se adicionou o usuário na tabela `admin_users`
+3. Certifique-se de que `is_active = true`
+
+### Problema: Sincronização não funciona
+
+1. Verifique se o `MP_ACCESS_TOKEN` está configurado no Supabase
+2. Verifique se há assinaturas com `mp_subscription_id` preenchido
+3. Veja os logs da edge function no Supabase Dashboard
