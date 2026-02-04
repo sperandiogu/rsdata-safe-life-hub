@@ -52,13 +52,13 @@ interface CustomerDetails {
   subscriptions: {
     id: string;
     status: string;
+    billing_period: string;
     start_date: string;
     end_date: string;
     mp_subscription_id: string | null;
     created_at: string;
     plans: {
       name: string;
-      type: string;
       price: number;
       description: string | null;
     };
@@ -111,13 +111,13 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
           subscriptions (
             id,
             status,
+            billing_period,
             start_date,
             end_date,
             mp_subscription_id,
             created_at,
             plans (
               name,
-              type,
               price,
               description
             )
@@ -353,7 +353,7 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
                               <div>
                                 <h4 className="font-semibold text-lg">{subscription.plans.name}</h4>
                                 <p className="text-sm text-gray-600">
-                                  {subscription.plans.type === "monthly" ? "Mensal" : "Anual"}
+                                  {subscription.billing_period === "mensal" ? "Mensal" : "Anual"}
                                 </p>
                               </div>
                               {getStatusBadge(subscription.status)}

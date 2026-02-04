@@ -105,6 +105,28 @@ Todos os valores monetários no painel administrativo agora mostram os valores c
 
 Os valores continuam sendo armazenados corretamente no banco de dados. Este era apenas um problema de **exibição** no frontend. Nenhuma alteração foi feita na estrutura do banco de dados ou nas edge functions.
 
+## Correções Adicionais
+
+### Erro: "column plans_2.type does not exist"
+
+**Problema**: A query em `CustomerDetailsDialog.tsx` tentava buscar a coluna `type` da tabela `plans`, que não existe.
+
+**Causa**: A tabela `plans` não tem coluna `type`. A informação de periodicidade (mensal/anual) está na coluna `billing_period` da tabela `subscriptions`.
+
+**Solução**:
+1. Removido `type` da query de `plans`
+2. Adicionado `billing_period` à query de `subscriptions`
+3. Atualizada a interface TypeScript
+4. Corrigida a exibição para usar `subscription.billing_period` ao invés de `subscription.plans.type`
+
+**Arquivos Modificados**:
+- `/src/components/admin/CustomerDetailsDialog.tsx`:
+  - Linha 54: Adicionado `billing_period` à interface
+  - Linha 59-64: Removido `type` da interface `plans`
+  - Linha 113: Adicionado `billing_period` à query
+  - Linha 119-122: Removido `type` da query de `plans`
+  - Linha 356: Corrigido de `subscription.plans.type` para `subscription.billing_period`
+
 ## Data da Correção
 
 04/02/2026
