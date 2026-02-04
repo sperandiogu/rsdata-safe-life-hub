@@ -41,7 +41,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/formulario-assinatura" element={<FormularioAssinatura />} />
             <Route path="/pagamento-confirmado" element={<PagamentoConfirmado />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/*" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
