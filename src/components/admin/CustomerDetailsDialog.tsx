@@ -136,15 +136,29 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
 
       if (error) throw error;
 
-      const { data: emailLogs } = await supabase
-        .from("email_logs")
-        .select("*")
-        .or(`payment_id.in.(${data.payments.map((p: any) => p.id).join(",")}),subscription_id.in.(${data.subscriptions.map((s: any) => s.id).join(",")})`)
-        .order("sent_at", { ascending: false });
+      let emailLogs: any[] = [];
+
+      if (data.payments.length > 0 || data.subscriptions.length > 0) {
+        const conditions = [];
+        if (data.payments.length > 0) {
+          conditions.push(`payment_id.in.(${data.payments.map((p: any) => p.id).join(",")})`);
+        }
+        if (data.subscriptions.length > 0) {
+          conditions.push(`subscription_id.in.(${data.subscriptions.map((s: any) => s.id).join(",")})`);
+        }
+
+        const { data: logs } = await supabase
+          .from("email_logs")
+          .select("*")
+          .or(conditions.join(","))
+          .order("sent_at", { ascending: false });
+
+        emailLogs = logs || [];
+      }
 
       return {
         ...data,
-        email_logs: emailLogs || [],
+        email_logs: emailLogs,
       };
     },
     enabled: open && !!customerId,
