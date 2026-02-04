@@ -8,6 +8,7 @@ import FormularioAssinatura from "./pages/FormularioAssinatura";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PagamentoConfirmado from "./pages/PagamentoConfirmado";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/formulario-assinatura" element={<FormularioAssinatura />} />
             <Route path="/pagamento-confirmado" element={<PagamentoConfirmado />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
