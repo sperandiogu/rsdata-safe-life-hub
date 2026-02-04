@@ -32,7 +32,7 @@ const DashboardStats = ({ stats, loading }: DashboardStatsProps) => {
     },
     {
       title: "Receita Total",
-      value: `R$ ${((stats?.totalRevenue || 0) / 100).toLocaleString("pt-BR", {
+      value: `R$ ${(stats?.totalRevenue || 0).toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`,

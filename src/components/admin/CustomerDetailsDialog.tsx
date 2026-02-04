@@ -203,8 +203,8 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
     );
   };
 
-  const formatCurrency = (cents: number) => {
-    return (cents / 100).toLocaleString("pt-BR", {
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
     });

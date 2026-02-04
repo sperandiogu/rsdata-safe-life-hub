@@ -128,7 +128,7 @@ const Pagamentos = () => {
     const rows = filteredPayments.map((payment) => [
       payment.customers.name,
       payment.customers.email,
-      (payment.amount / 100).toFixed(2),
+      payment.amount.toFixed(2),
       payment.status,
       payment.payment_method,
       payment.installments,
@@ -202,7 +202,7 @@ const Pagamentos = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               R${" "}
-              {(stats.totalRevenue / 100).toLocaleString("pt-BR", {
+              {stats.totalRevenue.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
               })}
             </div>
@@ -292,7 +292,7 @@ const Pagamentos = () => {
                         </TableCell>
                         <TableCell className="font-semibold">
                           R${" "}
-                          {(payment.amount / 100).toLocaleString("pt-BR", {
+                          {payment.amount.toLocaleString("pt-BR", {
                             minimumFractionDigits: 2,
                           })}
                         </TableCell>

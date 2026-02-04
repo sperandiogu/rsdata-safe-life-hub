@@ -170,7 +170,7 @@ const Dashboard = () => {
         .slice(-6)
         .map(([month, data]) => ({
           month,
-          revenue: data.revenue / 100,
+          revenue: data.revenue,
           customers: data.customers.size,
         }));
     },
@@ -205,7 +205,7 @@ const Dashboard = () => {
       return Object.entries(planCounts).map(([name, data]) => ({
         name,
         count: data.count,
-        revenue: data.revenue / 100,
+        revenue: data.revenue,
       }));
     },
   });
@@ -263,7 +263,7 @@ const Dashboard = () => {
     },
     {
       title: "Receita Total",
-      value: `R$ ${((stats?.totalRevenue || 0) / 100).toLocaleString("pt-BR", {
+      value: `R$ ${(stats?.totalRevenue || 0).toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`,
@@ -458,7 +458,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-gray-900">
-                    R$ {((activity.amount || 0) / 100).toFixed(2)}
+                    R$ {(activity.amount || 0).toFixed(2)}
                   </span>
                   <Badge
                     variant={activity.status === "approved" ? "default" : "secondary"}

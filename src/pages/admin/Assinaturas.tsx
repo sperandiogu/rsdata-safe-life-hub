@@ -157,7 +157,7 @@ const Assinaturas = () => {
       sub.customers.name,
       sub.customers.email,
       sub.plans.name,
-      (sub.plans.price / 100).toFixed(2),
+      sub.plans.price.toFixed(2),
       sub.status,
       new Date(sub.start_date).toLocaleDateString("pt-BR"),
       new Date(sub.end_date).toLocaleDateString("pt-BR"),
@@ -233,7 +233,7 @@ const Assinaturas = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               R${" "}
-              {(stats.revenue / 100).toLocaleString("pt-BR", {
+              {stats.revenue.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
               })}
             </div>
@@ -332,7 +332,7 @@ const Assinaturas = () => {
                         <TableCell className="font-medium">{subscription.plans.name}</TableCell>
                         <TableCell>
                           R${" "}
-                          {(subscription.plans.price / 100).toLocaleString("pt-BR", {
+                          {subscription.plans.price.toLocaleString("pt-BR", {
                             minimumFractionDigits: 2,
                           })}
                         </TableCell>
