@@ -53,8 +53,8 @@ interface CustomerDetails {
     id: string;
     status: string;
     billing_period: string;
-    start_date: string;
-    end_date: string;
+    started_at: string;
+    expires_at: string;
     mp_subscription_id: string | null;
     created_at: string;
     plans: {
@@ -113,8 +113,8 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
             id,
             status,
             billing_period,
-            start_date,
-            end_date,
+            started_at,
+            expires_at,
             mp_subscription_id,
             created_at,
             plans (
@@ -375,11 +375,11 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
                               </div>
                               <div>
                                 <p className="text-gray-500">Início</p>
-                                <p className="font-medium">{formatDate(subscription.start_date)}</p>
+                                <p className="font-medium">{formatDate(subscription.started_at)}</p>
                               </div>
                               <div>
                                 <p className="text-gray-500">Término</p>
-                                <p className="font-medium">{formatDate(subscription.end_date)}</p>
+                                <p className="font-medium">{formatDate(subscription.expires_at)}</p>
                               </div>
                               <div>
                                 <p className="text-gray-500">Criada em</p>

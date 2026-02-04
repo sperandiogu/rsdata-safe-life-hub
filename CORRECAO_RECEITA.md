@@ -145,6 +145,21 @@ E a periodicidade está na coluna `billing_period` da tabela `subscriptions` (va
   - Linha 182-192: Adicionado `billing_period` à query e corrigido para buscar `monthly_price` e `annual_price`
   - Linha 202-203: Corrigido cálculo de receita por plano para usar preço correto
 
+### Erro: "column subscriptions_1.start_date does not exist"
+
+**Problema**: As queries tentavam buscar as colunas `start_date` e `end_date` da tabela `subscriptions`, que não existem.
+
+**Causa**: A tabela `subscriptions` usa nomes diferentes para essas colunas:
+- `started_at` - Data de início da assinatura
+- `expires_at` - Data de expiração da assinatura
+
+**Solução**: Substituído todas as ocorrências de `start_date` por `started_at` e `end_date` por `expires_at`.
+
+**Arquivos Modificados**:
+- `/src/components/admin/CustomerDetailsDialog.tsx` - Interface e queries corrigidas
+- `/src/components/admin/CustomerList.tsx` - Interface e queries corrigidas
+- `/src/pages/admin/Assinaturas.tsx` - Interface, queries, CSV export e tabelas corrigidas
+
 ## Data da Correção
 
 04/02/2026

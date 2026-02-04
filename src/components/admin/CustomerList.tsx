@@ -25,8 +25,8 @@ interface Customer {
   subscriptions?: {
     id: string;
     status: string;
-    start_date: string;
-    end_date: string;
+    started_at: string;
+    expires_at: string;
     plans: {
       name: string;
     };
@@ -62,8 +62,8 @@ const CustomerList = ({ onSelectCustomer }: CustomerListProps) => {
           subscriptions (
             id,
             status,
-            start_date,
-            end_date,
+            started_at,
+            expires_at,
             plans (
               name
             )

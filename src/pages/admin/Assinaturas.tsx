@@ -27,8 +27,8 @@ import { useToast } from "@/hooks/use-toast";
 interface Subscription {
   id: string;
   status: string;
-  start_date: string;
-  end_date: string;
+  started_at: string;
+  expires_at: string;
   billing_period: string;
   created_at: string;
   customers: {
@@ -92,8 +92,8 @@ const Assinaturas = () => {
         .select(`
           id,
           status,
-          start_date,
-          end_date,
+          started_at,
+          expires_at,
           billing_period,
           created_at,
           customers (
@@ -159,8 +159,8 @@ const Assinaturas = () => {
       sub.plans.name,
       (sub.billing_period === "mensal" ? sub.plans.monthly_price : sub.plans.annual_price).toFixed(2),
       sub.status,
-      new Date(sub.start_date).toLocaleDateString("pt-BR"),
-      new Date(sub.end_date).toLocaleDateString("pt-BR"),
+      new Date(sub.started_at).toLocaleDateString("pt-BR"),
+      new Date(sub.expires_at).toLocaleDateString("pt-BR"),
       sub.billing_period,
     ]);
 
@@ -344,10 +344,10 @@ const Assinaturas = () => {
                           <Badge variant="outline">{subscription.billing_period}</Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(subscription.start_date).toLocaleDateString("pt-BR")}
+                          {new Date(subscription.started_at).toLocaleDateString("pt-BR")}
                         </TableCell>
                         <TableCell>
-                          {new Date(subscription.end_date).toLocaleDateString("pt-BR")}
+                          {new Date(subscription.expires_at).toLocaleDateString("pt-BR")}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm">
