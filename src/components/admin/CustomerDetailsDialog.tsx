@@ -71,7 +71,7 @@ interface CustomerDetails {
     payment_method: string;
     installments: number;
     mp_payment_id: string;
-    approval_date: string | null;
+    paid_at: string | null;
     created_at: string;
   }[];
   email_logs: {
@@ -131,7 +131,7 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
             payment_method,
             installments,
             mp_payment_id,
-            approval_date,
+            paid_at,
             created_at
           )
         `)
@@ -434,10 +434,10 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
                                 <p className="text-gray-500">Data de Criação</p>
                                 <p className="font-medium">{formatDateTime(payment.created_at)}</p>
                               </div>
-                              {payment.approval_date && (
+                              {payment.paid_at && (
                                 <div>
                                   <p className="text-gray-500">Data de Aprovação</p>
-                                  <p className="font-medium">{formatDateTime(payment.approval_date)}</p>
+                                  <p className="font-medium">{formatDateTime(payment.paid_at)}</p>
                                 </div>
                               )}
                             </div>

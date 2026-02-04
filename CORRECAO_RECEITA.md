@@ -160,6 +160,18 @@ E a periodicidade está na coluna `billing_period` da tabela `subscriptions` (va
 - `/src/components/admin/CustomerList.tsx` - Interface e queries corrigidas
 - `/src/pages/admin/Assinaturas.tsx` - Interface, queries, CSV export e tabelas corrigidas
 
+### Erro: "column payments_1.approval_date does not exist"
+
+**Problema**: As queries tentavam buscar a coluna `approval_date` da tabela `payments`, que não existe.
+
+**Causa**: A tabela `payments` usa `paid_at` para armazenar a data de pagamento/aprovação, não `approval_date`.
+
+**Solução**: Substituído todas as ocorrências de `approval_date` por `paid_at`.
+
+**Arquivos Modificados**:
+- `/src/components/admin/CustomerDetailsDialog.tsx` - Interface e queries de pagamentos corrigidas
+- `/src/pages/admin/Pagamentos.tsx` - Interface, queries e CSV export corrigidos
+
 ## Data da Correção
 
 04/02/2026

@@ -39,7 +39,7 @@ interface Payment {
   payment_method: string;
   installments: number;
   mp_payment_id: string;
-  approval_date: string | null;
+  paid_at: string | null;
   created_at: string;
   customers: {
     name: string;
@@ -63,7 +63,7 @@ const Pagamentos = () => {
           payment_method,
           installments,
           mp_payment_id,
-          approval_date,
+          paid_at,
           created_at,
           customers (
             name,
@@ -134,8 +134,8 @@ const Pagamentos = () => {
       payment.installments,
       payment.mp_payment_id,
       new Date(payment.created_at).toLocaleString("pt-BR"),
-      payment.approval_date
-        ? new Date(payment.approval_date).toLocaleString("pt-BR")
+      payment.paid_at
+        ? new Date(payment.paid_at).toLocaleString("pt-BR")
         : "N/A",
     ]);
 
