@@ -172,6 +172,21 @@ E a periodicidade está na coluna `billing_period` da tabela `subscriptions` (va
 - `/src/components/admin/CustomerDetailsDialog.tsx` - Interface e queries de pagamentos corrigidas
 - `/src/pages/admin/Pagamentos.tsx` - Interface, queries e CSV export corrigidos
 
+### Erro: "Cannot read properties of null (reading 'name')"
+
+**Problema**: O código tentava acessar propriedades de `payment.customers` sem verificar se o objeto estava presente.
+
+**Causa**: A tabela `payments` tem uma foreign key `customer_id` com `ON DELETE SET NULL`, permitindo valores NULL. Além disso, a query usa LEFT JOIN, que pode retornar null quando não há cliente associado.
+
+**Solução**:
+- Adicionada verificação de null no filtro de pagamentos
+- Usado optional chaining (`?.`) em todos os acessos a `payment.customers`
+- Atualizada interface TypeScript para refletir que `customers` pode ser null: `customers: {...} | null`
+- Adicionado fallback "N/A" para exibição quando o cliente não existe
+
+**Arquivos Modificados**:
+- `/src/pages/admin/Pagamentos.tsx` - Interface TypeScript, filtro, CSV export e renderização da tabela
+
 ## Data da Correção
 
 04/02/2026

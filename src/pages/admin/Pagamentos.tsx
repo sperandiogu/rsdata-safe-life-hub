@@ -44,7 +44,7 @@ interface Payment {
   customers: {
     name: string;
     email: string;
-  };
+  } | null;
 }
 
 const Pagamentos = () => {
@@ -79,6 +79,8 @@ const Pagamentos = () => {
   });
 
   const filteredPayments = payments?.filter((payment) => {
+    if (!payment.customers) return false;
+
     const matchesSearch =
       payment.customers.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.customers.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,8 +128,8 @@ const Pagamentos = () => {
       "Data de Aprovação",
     ];
     const rows = filteredPayments.map((payment) => [
-      payment.customers.name,
-      payment.customers.email,
+      payment.customers?.name || "N/A",
+      payment.customers?.email || "N/A",
       payment.amount.toFixed(2),
       payment.status,
       payment.payment_method,
@@ -284,9 +286,9 @@ const Pagamentos = () => {
                       <TableRow key={payment.id}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{payment.customers.name}</div>
+                            <div className="font-medium">{payment.customers?.name || "N/A"}</div>
                             <div className="text-sm text-gray-500">
-                              {payment.customers.email}
+                              {payment.customers?.email || "N/A"}
                             </div>
                           </div>
                         </TableCell>
