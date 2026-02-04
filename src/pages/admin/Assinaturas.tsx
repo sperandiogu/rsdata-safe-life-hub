@@ -37,8 +37,8 @@ interface Subscription {
   };
   plans: {
     name: string;
-    price: number;
-    type: string;
+    monthly_price: number;
+    annual_price: number;
   };
 }
 
@@ -102,8 +102,8 @@ const Assinaturas = () => {
           ),
           plans (
             name,
-            price,
-            type
+            monthly_price,
+            annual_price
           )
         `)
         .order("created_at", { ascending: false });
@@ -157,7 +157,7 @@ const Assinaturas = () => {
       sub.customers.name,
       sub.customers.email,
       sub.plans.name,
-      sub.plans.price.toFixed(2),
+      (sub.billing_period === "mensal" ? sub.plans.monthly_price : sub.plans.annual_price).toFixed(2),
       sub.status,
       new Date(sub.start_date).toLocaleDateString("pt-BR"),
       new Date(sub.end_date).toLocaleDateString("pt-BR"),
@@ -183,7 +183,7 @@ const Assinaturas = () => {
     revenue:
       subscriptions
         ?.filter((s) => s.status === "active")
-        .reduce((sum, s) => sum + s.plans.price, 0) || 0,
+        .reduce((sum, s) => sum + (s.billing_period === "mensal" ? s.plans.monthly_price : s.plans.annual_price), 0) || 0,
   };
 
   return (
@@ -332,7 +332,10 @@ const Assinaturas = () => {
                         <TableCell className="font-medium">{subscription.plans.name}</TableCell>
                         <TableCell>
                           R${" "}
-                          {subscription.plans.price.toLocaleString("pt-BR", {
+                          {(subscription.billing_period === "mensal"
+                            ? subscription.plans.monthly_price
+                            : subscription.plans.annual_price
+                          ).toLocaleString("pt-BR", {
                             minimumFractionDigits: 2,
                           })}
                         </TableCell>

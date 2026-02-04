@@ -59,7 +59,8 @@ interface CustomerDetails {
     created_at: string;
     plans: {
       name: string;
-      price: number;
+      monthly_price: number;
+      annual_price: number;
       description: string | null;
     };
   }[];
@@ -118,7 +119,8 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
             created_at,
             plans (
               name,
-              price,
+              monthly_price,
+              annual_price,
               description
             )
           ),
@@ -364,7 +366,11 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
                                 <p className="text-gray-500">Valor</p>
                                 <p className="font-medium flex items-center gap-1">
                                   <DollarSign className="h-3 w-3" />
-                                  {formatCurrency(subscription.plans.price)}
+                                  {formatCurrency(
+                                    subscription.billing_period === "mensal"
+                                      ? subscription.plans.monthly_price
+                                      : subscription.plans.annual_price
+                                  )}
                                 </p>
                               </div>
                               <div>

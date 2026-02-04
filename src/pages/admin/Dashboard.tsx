@@ -184,9 +184,11 @@ const Dashboard = () => {
         .select(`
           id,
           status,
+          billing_period,
           plans (
             name,
-            price
+            monthly_price,
+            annual_price
           )
         `)
         .eq("status", "active");
@@ -199,7 +201,8 @@ const Dashboard = () => {
           planCounts[planName] = { count: 0, revenue: 0 };
         }
         planCounts[planName].count += 1;
-        planCounts[planName].revenue += sub.plans.price;
+        const price = sub.billing_period === "mensal" ? sub.plans.monthly_price : sub.plans.annual_price;
+        planCounts[planName].revenue += price;
       });
 
       return Object.entries(planCounts).map(([name, data]) => ({

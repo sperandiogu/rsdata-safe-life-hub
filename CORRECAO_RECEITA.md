@@ -107,25 +107,43 @@ Os valores continuam sendo armazenados corretamente no banco de dados. Este era 
 
 ## Correções Adicionais
 
-### Erro: "column plans_2.type does not exist"
+### Erro: "column plans_2.type does not exist" e "column plans_2.price does not exist"
 
-**Problema**: A query em `CustomerDetailsDialog.tsx` tentava buscar a coluna `type` da tabela `plans`, que não existe.
+**Problema**: As queries tentavam buscar as colunas `type` e `price` da tabela `plans`, que não existem.
 
-**Causa**: A tabela `plans` não tem coluna `type`. A informação de periodicidade (mensal/anual) está na coluna `billing_period` da tabela `subscriptions`.
+**Causa**: A tabela `plans` tem as seguintes colunas para preços:
+- `monthly_price` - Preço mensal
+- `annual_price` - Preço anual
+
+E a periodicidade está na coluna `billing_period` da tabela `subscriptions` (valores: "mensal" ou "anual").
 
 **Solução**:
 1. Removido `type` da query de `plans`
-2. Adicionado `billing_period` à query de `subscriptions`
-3. Atualizada a interface TypeScript
-4. Corrigida a exibição para usar `subscription.billing_period` ao invés de `subscription.plans.type`
+2. Substituído `price` por `monthly_price` e `annual_price`
+3. Adicionado `billing_period` à query de `subscriptions`
+4. Atualizada todas as interfaces TypeScript
+5. Corrigida a lógica para selecionar o preço correto baseado no `billing_period`
 
 **Arquivos Modificados**:
+
 - `/src/components/admin/CustomerDetailsDialog.tsx`:
   - Linha 54: Adicionado `billing_period` à interface
-  - Linha 59-64: Removido `type` da interface `plans`
+  - Linha 59-64: Corrigido interface `plans` para usar `monthly_price` e `annual_price`
   - Linha 113: Adicionado `billing_period` à query
-  - Linha 119-122: Removido `type` da query de `plans`
+  - Linha 119-122: Corrigido query de `plans` para buscar `monthly_price` e `annual_price`
   - Linha 356: Corrigido de `subscription.plans.type` para `subscription.billing_period`
+  - Linha 367-375: Corrigido exibição de preço para usar valor correto baseado no `billing_period`
+
+- `/src/pages/admin/Assinaturas.tsx`:
+  - Linha 38-42: Corrigido interface para usar `monthly_price` e `annual_price`
+  - Linha 103-107: Corrigido query para buscar preços corretos
+  - Linha 160: Corrigido CSV export para usar preço baseado em `billing_period`
+  - Linha 186: Corrigido cálculo de receita para usar preço baseado em `billing_period`
+  - Linha 333-339: Corrigido exibição de preço na tabela
+
+- `/src/pages/admin/Dashboard.tsx`:
+  - Linha 182-192: Adicionado `billing_period` à query e corrigido para buscar `monthly_price` e `annual_price`
+  - Linha 202-203: Corrigido cálculo de receita por plano para usar preço correto
 
 ## Data da Correção
 
