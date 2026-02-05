@@ -69,13 +69,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">RS</span>
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">RSData</h2>
-                <p className="text-xs text-gray-500">Admin Panel</p>
-              </div>
+              <img
+                src="https://cadastro.rsdata.com.br/rsdata-logo.png"
+                alt="RSData Logo"
+                className="h-7 w-auto"
+              />
             </div>
             <Button
               variant="ghost"
@@ -83,7 +81,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               className="lg:hidden"
               onClick={() => setSidebarOpen(false)}
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 text-[#575756]" />
             </Button>
           </div>
 
@@ -98,11 +96,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     active
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-[#084D6C]/5 text-[#084D6C]"
+                      : "text-[#575756] hover:bg-gray-50 hover:text-[#084D6C]"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5", active ? "text-blue-700" : "text-gray-400")} />
+                  <Icon className={cn("h-5 w-5", active ? "text-[#084D6C]" : "text-gray-400")} />
                   {item.name}
                 </Link>
               );
@@ -112,7 +110,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <div className="p-4 border-t border-gray-200">
             <Button
               variant="ghost"
-              className="w-full justify-start gap-3 text-gray-700"
+              className="w-full justify-start gap-3 text-[#575756] hover:text-[#084D6C]"
               onClick={handleSignOut}
             >
               <LogOut className="h-5 w-5 text-gray-400" />
@@ -130,6 +128,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="text-[#575756] hover:text-[#084D6C]"
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -138,22 +137,22 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Buscar clientes, pagamentos..."
-                  className="pl-10 bg-gray-50 border-0"
+                  className="pl-10 bg-gray-50 border-0 focus-visible:ring-[#084D6C]"
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative text-[#575756] hover:text-[#084D6C]">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
+                  <Button variant="ghost" className="gap-2 text-[#575756] hover:text-[#084D6C]">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-blue-600 text-white text-sm">
+                      <AvatarFallback className="bg-[#084D6C] text-white text-sm">
                         AD
                       </AvatarFallback>
                     </Avatar>
@@ -163,12 +162,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="text-[#575756] hover:text-[#084D6C]">
                     <Settings className="mr-2 h-4 w-4" />
                     Configurações
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem onClick={handleSignOut} className="text-[#575756] hover:text-[#084D6C]">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sair
                   </DropdownMenuItem>

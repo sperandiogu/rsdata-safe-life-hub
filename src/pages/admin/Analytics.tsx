@@ -170,7 +170,7 @@ const Analytics = () => {
     },
   });
 
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const COLORS = ["#084D6C", "#10b981", "#f59e0b", "#ef4444", "#0a5e87"];
 
   if (trendsLoading) {
     return (
@@ -199,7 +199,7 @@ const Analytics = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
-            <Percent className="h-4 w-4 text-blue-600" />
+            <Percent className="h-4 w-4 text-[#084D6C]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -229,7 +229,7 @@ const Analytics = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
-            <TrendingUp className="h-4 w-4 text-purple-600" />
+            <TrendingUp className="h-4 w-4 text-[#084D6C]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -270,8 +270,8 @@ const Analytics = () => {
                   type="monotone"
                   dataKey="revenue"
                   name="Receita (R$)"
-                  stroke="#3b82f6"
-                  fill="#3b82f6"
+                  stroke="#084D6C"
+                  fill="#084D6C"
                   fillOpacity={0.2}
                 />
                 <Area
@@ -313,7 +313,7 @@ const Analytics = () => {
                   }
                 />
                 <Legend />
-                <Bar dataKey="revenue" name="Receita" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="revenue" name="Receita" fill="#084D6C" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

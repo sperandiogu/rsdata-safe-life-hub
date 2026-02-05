@@ -243,7 +243,7 @@ const Dashboard = () => {
     },
   });
 
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const COLORS = ["#084D6C", "#10b981", "#f59e0b", "#ef4444", "#0a5e87"];
 
   const statCards = [
     {
@@ -252,8 +252,8 @@ const Dashboard = () => {
       change: `+${stats?.monthlyGrowth.toFixed(1)}%`,
       trend: "up",
       icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-[#084D6C]",
+      bgColor: "bg-[#084D6C]/5",
     },
     {
       title: "Assinaturas Ativas",
@@ -282,8 +282,8 @@ const Dashboard = () => {
       change: "+4.3%",
       trend: "up",
       icon: CreditCard,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      color: "text-[#084D6C]",
+      bgColor: "bg-[#084D6C]/5",
     },
   ];
 
@@ -310,7 +310,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-[#575756]">Dashboard</h1>
           <p className="text-gray-600 mt-1">Visão geral do seu negócio</p>
         </div>
         <Button
@@ -389,9 +389,9 @@ const Dashboard = () => {
                   type="monotone"
                   dataKey="revenue"
                   name="Receita"
-                  stroke="#3b82f6"
+                  stroke="#084D6C"
                   strokeWidth={2}
-                  dot={{ fill: "#3b82f6", r: 4 }}
+                  dot={{ fill: "#084D6C", r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -443,8 +443,8 @@ const Dashboard = () => {
                 className="flex items-center justify-between py-3 border-b last:border-0"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                    <CreditCard className="h-5 w-5 text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-[#084D6C]/5 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-[#084D6C]" />
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">{activity.customer_name}</p>

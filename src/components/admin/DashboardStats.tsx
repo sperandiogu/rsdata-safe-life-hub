@@ -20,8 +20,8 @@ const DashboardStats = ({ stats, loading }: DashboardStatsProps) => {
       title: "Total de Clientes",
       value: stats?.totalCustomers || 0,
       icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-[#084D6C]",
+      bgColor: "bg-[#084D6C]/5",
     },
     {
       title: "Assinaturas Ativas",
@@ -44,8 +44,8 @@ const DashboardStats = ({ stats, loading }: DashboardStatsProps) => {
       title: "Pagamentos Aprovados",
       value: stats?.successfulPayments || 0,
       icon: CreditCard,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      color: "text-[#084D6C]",
+      bgColor: "bg-[#084D6C]/5",
     },
   ];
 

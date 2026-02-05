@@ -32,15 +32,17 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">RS</span>
-            </div>
+            <img
+              src="https://cadastro.rsdata.com.br/rsdata-logo.png"
+              alt="RSData Logo"
+              className="h-12 w-auto"
+            />
           </div>
-          <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
+          <CardTitle className="text-2xl text-center text-[#575756]">Admin Login</CardTitle>
           <CardDescription className="text-center">
             Acesse o painel administrativo da RSData
           </CardDescription>
@@ -63,7 +65,7 @@ const AdminLogin = () => {
                   placeholder="admin@rsdata.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 focus-visible:ring-[#084D6C]"
                   required
                 />
               </div>
@@ -79,18 +81,18 @@ const AdminLogin = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 focus-visible:ring-[#084D6C]"
                   required
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-[#084D6C] hover:bg-[#084D6C]/90" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
             </Button>
 
             <div className="text-center text-sm text-gray-500 mt-4">
-              <a href="/" className="text-blue-600 hover:underline">
+              <a href="/" className="text-[#084D6C] hover:underline">
                 Voltar para o site
               </a>
             </div>
