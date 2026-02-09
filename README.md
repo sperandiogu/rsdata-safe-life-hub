@@ -59,6 +59,20 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (Database & Authentication)
+- MercadoPago (Payment Processing)
+
+## Security
+
+This project implements robust security measures:
+
+- **Content Security Policy (CSP)** - Protects against XSS and data injection attacks
+- **Security Headers** - X-Frame-Options, X-Content-Type-Options, X-XSS-Protection
+- **Referrer Policy** - Strict origin when cross-origin
+- **Permissions Policy** - Disables unused browser APIs
+- **HTTPS Enforcement** - Automatic upgrade of insecure requests
+
+For detailed information about security implementation, see [SECURITY.md](./SECURITY.md)
 
 ## How can I deploy this project?
 
