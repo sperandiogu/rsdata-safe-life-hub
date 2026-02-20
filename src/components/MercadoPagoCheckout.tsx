@@ -36,6 +36,7 @@ export function MercadoPagoCheckout({
 }: MercadoPagoCheckoutProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export function MercadoPagoCheckout({
           email: customerEmail,
         },
       }
-    : preferenceId
+    : preferenceId && preferenceId.trim() !== ""
       ? {
           amount: amount,
           preferenceId: preferenceId,
@@ -84,6 +85,7 @@ export function MercadoPagoCheckout({
       ticket: [],
       bankTransfer: [],
       atm: [],
+      mercadoPago: [],
     },
     visual: {
       style: {
@@ -172,11 +174,21 @@ export function MercadoPagoCheckout({
 
   const onErrorCallback = (error: unknown) => {
     console.error("MercadoPago Payment error:", error);
-    if (error && typeof error === 'object' && 'message' in error) {
-      onError?.(new Error(String(error.message)));
-    } else {
-      onError?.(new Error(String(error || 'Erro desconhecido ao carregar pagamento')));
+    setHasError(true);
+
+    let errorMessage = 'Erro desconhecido ao carregar pagamento';
+
+    if (error && typeof error === 'object') {
+      if ('message' in error && error.message) {
+        errorMessage = String(error.message);
+      } else if ('error' in error && error.error) {
+        errorMessage = String(error.error);
+      }
+    } else if (error) {
+      errorMessage = String(error);
     }
+
+    onError?.(new Error(errorMessage));
   };
 
   const onReadyCallback = () => {
@@ -189,6 +201,16 @@ export function MercadoPagoCheckout({
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-[#084D6C]" />
         <span className="ml-2 text-[#575756]">Carregando opcoes de pagamento...</span>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <span className="text-red-600">
+          Erro ao carregar as opções de pagamento. Por favor, tente novamente.
+        </span>
       </div>
     );
   }
