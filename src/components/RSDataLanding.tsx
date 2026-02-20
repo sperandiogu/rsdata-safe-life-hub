@@ -199,11 +199,7 @@ export function RSDataLanding() {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <div className="flex items-center">
-              <img
-                src="https://cadastro.rsdata.com.br/rsdata-logo.png"
-                alt="RSData Logo"
-                className="h-9 md:h-10 w-auto"
-              />
+              <div className="text-2xl font-bold text-[#084D6C]">RSData</div>
             </div>
 
             {/* Mobile Menu Button */}
@@ -927,11 +923,7 @@ export function RSDataLanding() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <img
-                src="https://cadastro.rsdata.com.br/rsdata-logo.png"
-                alt="RSData Logo"
-                className="h-8 w-auto brightness-0 invert"
-              />
+              <div className="text-xl font-bold text-white">RSData</div>
             </div>
             <div className="flex flex-wrap justify-center md:justify-end gap-6 text-sm text-gray-300">
               <a href="https://www.rsdata.com.br/quem-somos/" className="hover:text-white transition-colors">

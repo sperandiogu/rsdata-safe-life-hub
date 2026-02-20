@@ -53,11 +53,7 @@ export default function PagamentoConfirmado() {
       <header className="border-b bg-white shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center h-16 md:h-20">
-            <img
-              src="https://cadastro.rsdata.com.br/rsdata-logo.png"
-              alt="RSData Logo"
-              className="h-9 md:h-10 w-auto"
-            />
+            <div className="text-2xl font-bold text-[#084D6C]">RSData</div>
           </div>
         </div>
       </header>

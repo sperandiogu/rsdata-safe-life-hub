@@ -36,11 +36,7 @@ const AdminLogin = () => {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <img
-              src="https://cadastro.rsdata.com.br/rsdata-logo.png"
-              alt="RSData Logo"
-              className="h-12 w-auto"
-            />
+            <div className="text-3xl font-bold text-[#084D6C]">RSData</div>
           </div>
           <CardTitle className="text-2xl text-center text-[#575756]">Admin Login</CardTitle>
           <CardDescription className="text-center">

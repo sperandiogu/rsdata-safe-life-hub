@@ -92,7 +92,7 @@ function generateCustomerEmailHtml(data: CustomerEmailData): string {
           <!-- Header -->
           <tr>
             <td style="background-color: #084D6C; padding: 30px 40px; text-align: center;">
-              <img src="https://cadastro.rsdata.com.br/rsdata-logo.png" alt="RSData" height="40" style="display: block; margin: 0 auto;">
+              <h1 style="color: white; font-size: 32px; font-weight: bold; margin: 0;">RSData</h1>
             </td>
           </tr>
 
@@ -249,7 +249,7 @@ function generateInternalNotificationHtml(data: InternalNotificationData): strin
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>
                   <td>
-                    <img src="https://cadastro.rsdata.com.br/rsdata-logo.png" alt="RSData" height="35">
+                    <h1 style="color: #084D6C; font-size: 28px; font-weight: bold; margin: 0;">RSData</h1>
                   </td>
                   <td style="text-align: right;">
                     <span style="color: #22c55e; background-color: rgba(34, 197, 94, 0.2); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;">NOVA VENDA</span>
@@ -462,7 +462,7 @@ function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
           <!-- Header -->
           <tr>
             <td style="background-color: #084D6C; padding: 30px 40px; text-align: center;">
-              <img src="https://cadastro.rsdata.com.br/rsdata-logo.png" alt="RSData" height="40" style="display: block; margin: 0 auto;">
+              <h1 style="color: white; font-size: 32px; font-weight: bold; margin: 0;">RSData</h1>
             </td>
           </tr>
 
