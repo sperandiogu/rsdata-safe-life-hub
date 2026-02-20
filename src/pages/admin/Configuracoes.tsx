@@ -37,6 +37,7 @@ import {
 import { UserPlus, Users, CheckCircle, XCircle, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AdminUser {
   id: string;
@@ -50,6 +51,7 @@ interface AdminUser {
 
 const Configuracoes = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -69,6 +71,7 @@ const Configuracoes = () => {
 
   const { data: admins, isLoading } = useQuery({
     queryKey: ["admin-users"],
+    enabled: !!user,
     queryFn: async (): Promise<AdminUser[]> => {
       const headers = await getAuthHeaders();
       const res = await fetch(`${supabaseUrl}/functions/v1/manage-admin-users`, { headers });
