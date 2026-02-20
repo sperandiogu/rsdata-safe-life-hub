@@ -336,7 +336,7 @@ export default function FormularioAssinatura() {
         console.log("✅ Pagamento salvo no banco");
 
         setPaymentType("subscription");
-        setPreferenceId(externalReference);
+        setPreferenceId("");
         setExternalReference(externalReference);
         setSubscriptionId(dbSubscriptionId);
         console.log("🎯 Mudando para tela de pagamento...");
@@ -851,9 +851,9 @@ export default function FormularioAssinatura() {
                   </div>
                 </div>
 
-                {preferenceId && planData && (
+                {planData && externalReference && (
                   <MercadoPagoCheckout
-                    preferenceId={preferenceId}
+                    preferenceId={preferenceId || ""}
                     amount={planData.price}
                     planName={planData.planName}
                     planType={planData.planType}

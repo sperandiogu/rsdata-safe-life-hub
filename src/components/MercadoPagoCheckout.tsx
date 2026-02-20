@@ -55,18 +55,27 @@ export function MercadoPagoCheckout({
     }
   }, [onError]);
 
-  const initialization = isSubscription ? {
-    amount: amount,
-    payer: {
-      email: customerEmail,
-    },
-  } : {
-    amount: amount,
-    preferenceId: preferenceId,
-    payer: {
-      email: customerEmail,
-    },
-  };
+  const initialization = isSubscription
+    ? {
+        amount: amount,
+        payer: {
+          email: customerEmail,
+        },
+      }
+    : preferenceId
+      ? {
+          amount: amount,
+          preferenceId: preferenceId,
+          payer: {
+            email: customerEmail,
+          },
+        }
+      : {
+          amount: amount,
+          payer: {
+            email: customerEmail,
+          },
+        };
 
   const customization: IPaymentBrickCustomization = {
     paymentMethods: {
@@ -80,6 +89,8 @@ export function MercadoPagoCheckout({
       style: {
         theme: "default",
       },
+      hidePaymentButton: false,
+      hideFormTitle: false,
     },
   };
 
@@ -161,7 +172,11 @@ export function MercadoPagoCheckout({
 
   const onErrorCallback = (error: unknown) => {
     console.error("MercadoPago Payment error:", error);
-    onError?.(new Error(String(error)));
+    if (error && typeof error === 'object' && 'message' in error) {
+      onError?.(new Error(String(error.message)));
+    } else {
+      onError?.(new Error(String(error || 'Erro desconhecido ao carregar pagamento')));
+    }
   };
 
   const onReadyCallback = () => {
