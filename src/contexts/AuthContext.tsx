@@ -47,15 +47,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (error) throw error;
 
-    const { data: adminUser } = await supabase
+    const { data: adminUser, error: adminError } = await supabase
       .from("admin_users")
       .select("is_active")
       .eq("id", data.user.id)
-      .single();
+      .maybeSingle();
 
-    if (!adminUser?.is_active) {
+    if (adminError || !adminUser) {
       await supabase.auth.signOut();
-      throw new Error("Usuário inativo");
+      throw new Error("Acesso negado. Este usuário não tem permissão de administrador.");
+    }
+
+    if (!adminUser.is_active) {
+      await supabase.auth.signOut();
+      throw new Error("Usuário inativo. Contate o administrador do sistema.");
     }
   };
 
