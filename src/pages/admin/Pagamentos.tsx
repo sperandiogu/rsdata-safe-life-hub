@@ -84,7 +84,7 @@ const Pagamentos = () => {
     const matchesSearch =
       payment.customers.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.customers.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.mp_payment_id.includes(searchTerm);
+      (payment.mp_payment_id || '').includes(searchTerm);
 
     const matchesStatus = statusFilter === "all" || payment.status === statusFilter;
 
@@ -302,13 +302,13 @@ const Pagamentos = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 text-gray-400" />
-                            {payment.payment_method}
+                            {payment.payment_method || 'N/A'}
                           </div>
                         </TableCell>
                         <TableCell>{payment.installments}x</TableCell>
                         <TableCell>
                           <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            {payment.mp_payment_id}
+                            {payment.mp_payment_id || 'Pendente'}
                           </code>
                         </TableCell>
                         <TableCell>

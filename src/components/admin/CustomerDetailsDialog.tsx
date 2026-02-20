@@ -423,7 +423,7 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
                               <div>
                                 <h4 className="font-semibold text-xl">{formatCurrency(payment.amount)}</h4>
                                 <p className="text-sm text-gray-600">
-                                  {payment.payment_method} - {payment.installments}x
+                                  {payment.payment_method || 'N/A'} - {payment.installments}x
                                 </p>
                               </div>
                               {getStatusBadge(payment.status)}
@@ -444,7 +444,7 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
 
                             <div className="bg-gray-50 p-2 rounded">
                               <p className="text-xs text-gray-500">ID Mercado Pago</p>
-                              <p className="font-mono text-xs">{payment.mp_payment_id}</p>
+                              <p className="font-mono text-xs">{payment.mp_payment_id || 'Pendente'}</p>
                             </div>
 
                             <div className="bg-gray-50 p-2 rounded">
