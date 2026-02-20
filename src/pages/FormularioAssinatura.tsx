@@ -15,7 +15,7 @@ import {
   createPayment
 } from "@/lib/supabase-db";
 import { ArrowLeft, FileText, Loader2, Shield, CreditCard, AlertCircle } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface PlanData {
@@ -59,6 +59,12 @@ export default function FormularioAssinatura() {
   const [isLoadingCEP, setIsLoadingCEP] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [documentError, setDocumentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log("🔄 Estado currentStep mudou para:", currentStep);
+    console.log("🔑 preferenceId:", preferenceId);
+    console.log("💳 paymentType:", paymentType);
+  }, [currentStep, preferenceId, paymentType]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -302,28 +308,41 @@ export default function FormularioAssinatura() {
     setPaymentError(null);
 
     try {
+      console.log("🔄 Iniciando processo de assinatura...");
+      console.log("📋 Tipo de plano:", planData.planType);
+
       await sendToMakeWebhook();
+      console.log("✅ Webhook enviado");
 
       const externalReference = generateExternalReference(planData.planId);
+      console.log("🔑 Referência externa gerada:", externalReference);
 
+      console.log("👤 Criando registros no banco...");
       const { customerId, subscriptionId: dbSubscriptionId } = await createDatabaseRecords(externalReference);
+      console.log("✅ Cliente criado:", customerId);
+      console.log("✅ Assinatura criada:", dbSubscriptionId);
 
       const isMonthly = planData.planType.toLowerCase() === "mensal";
+      console.log("📅 É plano mensal?", isMonthly);
 
       if (isMonthly) {
+        console.log("💳 Configurando pagamento recorrente...");
         await savePaymentToDatabase(
           externalReference,
           "",
           customerId,
           dbSubscriptionId
         );
+        console.log("✅ Pagamento salvo no banco");
 
         setPaymentType("subscription");
         setPreferenceId(externalReference);
         setExternalReference(externalReference);
         setSubscriptionId(dbSubscriptionId);
+        console.log("🎯 Mudando para tela de pagamento...");
         setCurrentStep("payment");
       } else {
+        console.log("💰 Criando preferência de pagamento único...");
         const preferenceResponse = await createPaymentPreference({
           plan: {
             name: planData.planName,
@@ -349,6 +368,7 @@ export default function FormularioAssinatura() {
           externalReference,
           subscriptionId: dbSubscriptionId,
         });
+        console.log("✅ Preferência criada:", preferenceResponse);
 
         await savePaymentToDatabase(
           externalReference,
@@ -356,15 +376,20 @@ export default function FormularioAssinatura() {
           customerId,
           dbSubscriptionId
         );
+        console.log("✅ Pagamento salvo no banco");
 
         setPaymentType("one_time");
         setPreferenceId(preferenceResponse.preferenceId || "");
         setExternalReference(externalReference);
+        console.log("🎯 Mudando para tela de pagamento...");
         setCurrentStep("payment");
       }
+      console.log("✅ Processo concluído com sucesso!");
     } catch (error) {
-      console.error("Erro ao criar preferência de pagamento:", error);
-      setPaymentError("Ocorreu um erro ao processar seu pedido. Por favor, tente novamente.");
+      console.error("❌ Erro detalhado:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      console.error("❌ Mensagem de erro:", errorMessage);
+      setPaymentError(`Ocorreu um erro ao processar seu pedido: ${errorMessage}. Por favor, tente novamente.`);
     } finally {
       setIsCreatingPreference(false);
     }
