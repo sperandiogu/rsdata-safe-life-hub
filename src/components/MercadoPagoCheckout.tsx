@@ -1,9 +1,10 @@
-import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
+import { initMercadoPago, Payment, CardPayment } from "@mercadopago/sdk-react";
 import { useEffect, useState } from "react";
 import { MERCADOPAGO_PUBLIC_KEY, processCardPayment } from "@/lib/mercadopago";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { IPaymentBrickCustomization } from "@mercadopago/sdk-react/bricks/payment/type";
+import type { ICardPaymentFormData, ICardPaymentBrickPayer } from "@mercadopago/sdk-react/bricks/cardPayment/type";
 
 interface MercadoPagoCheckoutProps {
   preferenceId: string;
@@ -36,7 +37,6 @@ export function MercadoPagoCheckout({
 }: MercadoPagoCheckoutProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,29 +56,100 @@ export function MercadoPagoCheckout({
     }
   }, [onError]);
 
-  const initialization = isSubscription
-    ? {
+  const onSubmitSubscription = async (formData: ICardPaymentFormData<ICardPaymentBrickPayer>) => {
+    setIsProcessing(true);
+    try {
+      const subscriptionData = {
+        cardToken: formData.token,
+        email: customerEmail,
         amount: amount,
-        payer: {
-          email: customerEmail,
-        },
-      }
-    : preferenceId && preferenceId.trim() !== ""
-      ? {
-          amount: amount,
-          preferenceId: preferenceId,
-          payer: {
-            email: customerEmail,
-          },
-        }
-      : {
-          amount: amount,
-          payer: {
-            email: customerEmail,
-          },
-        };
+        planName: planName,
+        externalReference: externalReference,
+        subscriptionId: subscriptionId,
+        paymentMethodId: formData.payment_method_id,
+        installments: formData.installments,
+        issuerId: formData.issuer_id,
+      };
 
-  const customization: IPaymentBrickCustomization = {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-authorized-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify(subscriptionData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Falha ao criar assinatura");
+      }
+
+      const result = await response.json();
+      navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&subscription_id=${result.subscriptionId}`);
+    } catch (error) {
+      console.error("Error processing subscription:", error);
+      setIsProcessing(false);
+      onError?.(error instanceof Error ? error : new Error(String(error)));
+    }
+  };
+
+  const onSubmitPayment = async (formData: { formData: Record<string, unknown> }) => {
+    setIsProcessing(true);
+    try {
+      const cleanDocument = customerDocument.replace(/\D/g, "");
+      const isCompany = cleanDocument.length === 14;
+
+      const paymentData = {
+        formData: {
+          token: formData.formData.token as string,
+          issuer_id: String(formData.formData.issuer_id || ""),
+          payment_method_id: formData.formData.payment_method_id as string,
+          transaction_amount: amount,
+          installments: Number(formData.formData.installments) || 1,
+          payer: {
+            email: customerEmail,
+            identification: {
+              type: isCompany ? "CNPJ" : "CPF",
+              number: cleanDocument,
+            },
+          },
+        },
+        externalReference,
+        planName,
+        planType,
+      };
+
+      const result = await processCardPayment(paymentData);
+
+      if (result.status === "approved") {
+        navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&payment_id=${result.id}`);
+      } else if (result.status === "pending" || result.status === "in_process") {
+        navigate(`/pagamento-confirmado?status=pending&external_reference=${externalReference}&payment_id=${result.id}`);
+      } else {
+        setIsProcessing(false);
+        onError?.(new Error(`Pagamento ${result.status}: ${result.status_detail}`));
+      }
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      setIsProcessing(false);
+      onError?.(error instanceof Error ? error : new Error(String(error)));
+    }
+  };
+
+  const onErrorCallback = (error: unknown) => {
+    console.error("MercadoPago Brick error:", error);
+    let errorMessage = "Erro ao carregar opcoes de pagamento";
+    if (error && typeof error === "object" && "message" in error && error.message) {
+      errorMessage = String(error.message);
+    }
+    onError?.(new Error(errorMessage));
+  };
+
+  const paymentCustomization: IPaymentBrickCustomization = {
     paymentMethods: {
       creditCard: "all",
       debitCard: "all",
@@ -88,112 +159,10 @@ export function MercadoPagoCheckout({
       mercadoPago: [],
     },
     visual: {
-      style: {
-        theme: "default",
-      },
+      style: { theme: "default" },
       hidePaymentButton: false,
       hideFormTitle: false,
     },
-  };
-
-  const onSubmit = async (formData: { formData: Record<string, unknown> }) => {
-    setIsProcessing(true);
-
-    try {
-      const cleanDocument = customerDocument.replace(/\D/g, "");
-      const isCompany = cleanDocument.length === 14;
-
-      if (isSubscription) {
-        const subscriptionData = {
-          cardToken: formData.formData.token as string,
-          email: customerEmail,
-          amount: amount,
-          planName: planName,
-          externalReference: externalReference,
-          subscriptionId: subscriptionId,
-        };
-
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-        const response = await fetch(`${supabaseUrl}/functions/v1/create-authorized-subscription`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseAnonKey}`,
-          },
-          body: JSON.stringify(subscriptionData),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Failed to create subscription");
-        }
-
-        const result = await response.json();
-
-        navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&subscription_id=${result.subscriptionId}`);
-      } else {
-        const paymentData = {
-          formData: {
-            token: formData.formData.token as string,
-            issuer_id: String(formData.formData.issuer_id || ""),
-            payment_method_id: formData.formData.payment_method_id as string,
-            transaction_amount: amount,
-            installments: Number(formData.formData.installments) || 1,
-            payer: {
-              email: customerEmail,
-              identification: {
-                type: isCompany ? "CNPJ" : "CPF",
-                number: cleanDocument,
-              },
-            },
-          },
-          externalReference,
-          planName,
-          planType,
-        };
-
-        const result = await processCardPayment(paymentData);
-
-        if (result.status === "approved") {
-          navigate(`/pagamento-confirmado?status=approved&external_reference=${externalReference}&payment_id=${result.id}`);
-        } else if (result.status === "pending" || result.status === "in_process") {
-          navigate(`/pagamento-confirmado?status=pending&external_reference=${externalReference}&payment_id=${result.id}`);
-        } else {
-          onError?.(new Error(`Pagamento ${result.status}: ${result.status_detail}`));
-        }
-      }
-    } catch (error) {
-      console.error("Error processing payment:", error);
-      onError?.(error as Error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const onErrorCallback = (error: unknown) => {
-    console.error("MercadoPago Payment error:", error);
-    setHasError(true);
-
-    let errorMessage = 'Erro desconhecido ao carregar pagamento';
-
-    if (error && typeof error === 'object') {
-      if ('message' in error && error.message) {
-        errorMessage = String(error.message);
-      } else if ('error' in error && error.error) {
-        errorMessage = String(error.error);
-      }
-    } else if (error) {
-      errorMessage = String(error);
-    }
-
-    onError?.(new Error(errorMessage));
-  };
-
-  const onReadyCallback = () => {
-    console.log("MercadoPago Payment ready");
-    onReady?.();
   };
 
   if (!isInitialized) {
@@ -201,16 +170,6 @@ export function MercadoPagoCheckout({
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-[#084D6C]" />
         <span className="ml-2 text-[#575756]">Carregando opcoes de pagamento...</span>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <span className="text-red-600">
-          Erro ao carregar as opções de pagamento. Por favor, tente novamente.
-        </span>
       </div>
     );
   }
@@ -225,13 +184,44 @@ export function MercadoPagoCheckout({
           </div>
         </div>
       )}
-      <Payment
-        initialization={initialization}
-        customization={customization}
-        onSubmit={onSubmit}
-        onReady={onReadyCallback}
-        onError={onErrorCallback}
-      />
+
+      {isSubscription ? (
+        <CardPayment
+          initialization={{
+            amount: amount,
+            payer: {
+              email: customerEmail,
+            },
+          }}
+          customization={{
+            visual: {
+              style: { theme: "default" },
+              hideFormTitle: false,
+            },
+          }}
+          onSubmit={onSubmitSubscription}
+          onReady={() => {
+            console.log("MercadoPago CardPayment ready");
+            onReady?.();
+          }}
+          onError={onErrorCallback}
+        />
+      ) : (
+        <Payment
+          initialization={
+            preferenceId && preferenceId.trim() !== ""
+              ? { amount, preferenceId, payer: { email: customerEmail } }
+              : { amount, payer: { email: customerEmail } }
+          }
+          customization={paymentCustomization}
+          onSubmit={onSubmitPayment}
+          onReady={() => {
+            console.log("MercadoPago Payment ready");
+            onReady?.();
+          }}
+          onError={onErrorCallback}
+        />
+      )}
     </div>
   );
 }
