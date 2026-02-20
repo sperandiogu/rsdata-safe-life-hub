@@ -69,7 +69,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
-              <div className="text-xl font-bold text-[#084D6C]">RSData</div>
+              <img
+                src="/RSData-Logo-e1717775648932.webp"
+                alt="RSData"
+                className="h-8 w-auto"
+              />
             </div>
             <Button
               variant="ghost"
