@@ -32,11 +32,12 @@ interface PaymentData {
 
 export async function findOrCreateCustomer(customerData: CustomerData): Promise<string> {
   const cleanDocument = customerData.document.replace(/\D/g, '');
+  const cleanEmail = customerData.email.toLowerCase().trim();
   const documentType = cleanDocument.length === 14 ? 'PJ' : 'PF';
 
   try {
     const checkResponse = await fetch(
-      `${supabaseUrl}/rest/v1/customers?document=eq.${cleanDocument}&select=id`,
+      `${supabaseUrl}/rest/v1/customers?or=(document.eq.${cleanDocument},email.eq.${cleanEmail})&select=id,document,email`,
       {
         headers: {
           "Authorization": `Bearer ${supabaseAnonKey}`,
@@ -48,9 +49,15 @@ export async function findOrCreateCustomer(customerData: CustomerData): Promise<
     const existingCustomers = await checkResponse.json();
 
     if (existingCustomers && existingCustomers.length > 0) {
+      console.log("✅ Customer já existe:", {
+        id: existingCustomers[0].id,
+        document: existingCustomers[0].document,
+        email: existingCustomers[0].email
+      });
       return existingCustomers[0].id;
     }
 
+    console.log("🆕 Criando novo customer...");
     const createResponse = await fetch(`${supabaseUrl}/rest/v1/customers`, {
       method: "POST",
       headers: {
@@ -63,16 +70,43 @@ export async function findOrCreateCustomer(customerData: CustomerData): Promise<
         name: customerData.name,
         document: cleanDocument,
         document_type: documentType,
-        email: customerData.email.toLowerCase(),
+        email: cleanEmail,
         phone: customerData.phone,
       })
     });
 
     if (!createResponse.ok) {
-      throw new Error("Failed to create customer");
+      if (createResponse.status === 409) {
+        console.log("⚠️ Erro 409 ao criar customer, buscando por documento ou email...");
+        const retryCheckResponse = await fetch(
+          `${supabaseUrl}/rest/v1/customers?or=(document.eq.${cleanDocument},email.eq.${cleanEmail})&select=id,document,email`,
+          {
+            headers: {
+              "Authorization": `Bearer ${supabaseAnonKey}`,
+              "apikey": supabaseAnonKey,
+            }
+          }
+        );
+
+        const retryCustomers = await retryCheckResponse.json();
+
+        if (retryCustomers && retryCustomers.length > 0) {
+          console.log("✅ Customer encontrado na segunda tentativa:", {
+            id: retryCustomers[0].id,
+            document: retryCustomers[0].document,
+            email: retryCustomers[0].email
+          });
+          return retryCustomers[0].id;
+        }
+      }
+
+      const errorText = await createResponse.text();
+      console.error("❌ Erro ao criar customer:", createResponse.status, errorText);
+      throw new Error(`Failed to create customer: ${createResponse.status} ${errorText}`);
     }
 
     const newCustomer = await createResponse.json();
+    console.log("✅ Novo customer criado:", newCustomer[0].id);
     return newCustomer[0].id;
   } catch (error) {
     console.error("Error finding or creating customer:", error);
