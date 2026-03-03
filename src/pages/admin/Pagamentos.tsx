@@ -81,12 +81,14 @@ const Pagamentos = () => {
   });
 
   const filteredPayments = payments?.filter((payment) => {
-    if (!payment.customers) return false;
+    const customerName = payment.customers?.name || "";
+    const customerEmail = payment.customers?.email || "";
 
     const matchesSearch =
-      payment.customers.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.customers.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (payment.mp_payment_id || '').includes(searchTerm);
+      searchTerm === "" ||
+      customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (payment.mp_payment_id || "").includes(searchTerm);
 
     const matchesStatus = statusFilter === "all" || payment.status === statusFilter;
 

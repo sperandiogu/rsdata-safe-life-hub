@@ -14,6 +14,16 @@ interface MercadoPagoCheckoutProps {
   customerEmail: string;
   customerDocument: string;
   customerName: string;
+  customerPhone?: string;
+  customerAddress?: {
+    cep: string;
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+  };
   externalReference: string;
   subscriptionId?: string;
   isSubscription?: boolean;
@@ -32,6 +42,8 @@ export function MercadoPagoCheckout({
   externalReference,
   subscriptionId,
   isSubscription = false,
+  customerPhone,
+  customerAddress,
   onReady,
   onError,
 }: MercadoPagoCheckoutProps) {
@@ -112,15 +124,32 @@ export function MercadoPagoCheckout({
           installments: Number(formData.formData.installments) || 1,
           payer: {
             email: customerEmail,
+            first_name: customerName.split(" ")[0],
+            last_name: customerName.split(" ").slice(1).join(" ") || customerName,
             identification: {
               type: isCompany ? "CNPJ" : "CPF",
               number: cleanDocument,
             },
+            phone: customerPhone ? {
+              area_code: customerPhone.replace(/\D/g, "").substring(0, 2),
+              number: customerPhone.replace(/\D/g, "").substring(2),
+            } : undefined,
+            address: customerAddress ? {
+              zip_code: customerAddress.cep.replace(/\D/g, ""),
+              street_name: customerAddress.street,
+              street_number: customerAddress.number,
+              neighborhood: customerAddress.neighborhood,
+              city: customerAddress.city,
+              federal_unit: customerAddress.state,
+            } : undefined,
           },
         },
         externalReference,
         planName,
         planType,
+        customerName,
+        customerPhone,
+        customerAddress,
       };
 
       const result = await processCardPayment(paymentData);

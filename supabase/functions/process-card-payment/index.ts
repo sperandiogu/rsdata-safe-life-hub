@@ -26,6 +26,17 @@ interface RequestPayload {
   externalReference: string;
   planName: string;
   planType: string;
+  customerName?: string;
+  customerPhone?: string;
+  customerAddress?: {
+    cep: string;
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -50,9 +61,13 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload: RequestPayload = await req.json();
-    const { formData, externalReference, planName, planType } = payload;
+    const { formData, externalReference, planName, planType, customerName, customerPhone, customerAddress } = payload;
 
-    const paymentBody = {
+    const payerFirstName = customerName?.split(" ")[0] || "";
+    const payerLastName = customerName?.split(" ").slice(1).join(" ") || "";
+    const cleanPhone = customerPhone?.replace(/\D/g, "") || "";
+
+    const paymentBody: Record<string, unknown> = {
       token: formData.token,
       issuer_id: formData.issuer_id || null,
       payment_method_id: formData.payment_method_id,
@@ -63,9 +78,55 @@ Deno.serve(async (req: Request) => {
       external_reference: externalReference,
       payer: {
         email: formData.payer.email,
+        first_name: payerFirstName,
+        last_name: payerLastName,
         identification: {
           type: formData.payer.identification.type,
           number: formData.payer.identification.number,
+        },
+        ...(cleanPhone.length >= 10 ? {
+          phone: {
+            area_code: cleanPhone.substring(0, 2),
+            number: cleanPhone.substring(2),
+          },
+        } : {}),
+        ...(customerAddress ? {
+          address: {
+            zip_code: customerAddress.cep.replace(/\D/g, ""),
+            street_name: customerAddress.street,
+            street_number: customerAddress.number,
+            neighborhood: customerAddress.neighborhood,
+            city: customerAddress.city,
+            federal_unit: customerAddress.state,
+          },
+        } : {}),
+      },
+      additional_info: {
+        items: [
+          {
+            id: externalReference,
+            title: `RSData - Plano ${planName} (${planType})`,
+            description: `Assinatura do plano ${planName} - ${planType}`,
+            quantity: 1,
+            unit_price: formData.transaction_amount,
+          },
+        ],
+        payer: {
+          first_name: payerFirstName,
+          last_name: payerLastName,
+          ...(cleanPhone.length >= 10 ? {
+            phone: {
+              area_code: cleanPhone.substring(0, 2),
+              number: cleanPhone.substring(2),
+            },
+          } : {}),
+          ...(customerAddress ? {
+            address: {
+              zip_code: customerAddress.cep.replace(/\D/g, ""),
+              street_name: customerAddress.street,
+              street_number: customerAddress.number,
+            },
+          } : {}),
         },
       },
     };

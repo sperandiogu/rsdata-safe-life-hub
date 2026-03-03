@@ -93,6 +93,25 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           mp_subscription_id: subscriptionData.id,
           status: "active",
+          started_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        }),
+      });
+
+      // Update pending payments for this subscription to approved
+      await fetch(`${supabaseUrl}/rest/v1/payments?subscription_id=eq.${subscriptionId}&status=eq.pending`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabaseServiceKey,
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          status: "approved",
+          paid_at: new Date().toISOString(),
+          payment_method: "subscription",
+          payment_type: "recurring",
         }),
       });
     }

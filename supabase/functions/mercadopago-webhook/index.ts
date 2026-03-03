@@ -79,6 +79,24 @@ async function processSubscriptionEvent(
         })
         .eq("id", subRecord.id);
 
+      // Update pending payments for this subscription to approved
+      const { error: paymentUpdateError } = await supabase
+        .from("payments")
+        .update({
+          status: "approved",
+          paid_at: new Date().toISOString(),
+          payment_method: "subscription",
+          payment_type: "recurring",
+        })
+        .eq("subscription_id", subRecord.id)
+        .eq("status", "pending");
+
+      if (paymentUpdateError) {
+        console.error("Error updating payment status:", paymentUpdateError);
+      } else {
+        console.log("Pending payments updated to approved for subscription:", subRecord.id);
+      }
+
       console.log("Subscription activated successfully");
 
       const { data: addressData } = await supabase
@@ -424,17 +442,36 @@ Deno.serve(async (req: Request) => {
         updateData.paid_at = payment.date_approved || new Date().toISOString();
       }
 
-      const { error: updateError } = await supabase
+      let paymentUpdated = false;
+
+      const { error: updateError, count } = await supabase
         .from("payments")
         .update(updateData)
-        .eq("external_reference", externalReference);
+        .eq("external_reference", externalReference)
+        .select("id", { count: "exact", head: true });
 
       if (updateError) {
         console.error("Error updating payment:", updateError);
+      } else if (!count || count === 0) {
+        // Fallback: external_reference didn't match, try by mp_payment_id
+        console.log("No payment found by external_reference, trying mp_payment_id:", payment.id);
+        const { error: fallbackError } = await supabase
+          .from("payments")
+          .update(updateData)
+          .eq("mp_payment_id", payment.id.toString());
+
+        if (fallbackError) {
+          console.error("Fallback update by mp_payment_id also failed:", fallbackError);
+        } else {
+          console.log("Payment updated via mp_payment_id fallback");
+          paymentUpdated = true;
+        }
       } else {
         console.log("Payment updated successfully:", externalReference);
+        paymentUpdated = true;
+      }
 
-        if (payment.status === "approved") {
+      if (paymentUpdated && payment.status === "approved") {
           const { data: paymentRecord } = await supabase
             .from("payments")
             .select(`
@@ -643,7 +680,6 @@ Deno.serve(async (req: Request) => {
               console.error("Error sending internal email:", emailError);
             }
           }
-        }
       }
     }
 

@@ -860,6 +860,16 @@ export default function FormularioAssinatura() {
                     customerEmail={formData.email}
                     customerDocument={formData.cpfCnpj}
                     customerName={formData.nomeRazaoSocial}
+                    customerPhone={formData.telefone}
+                    customerAddress={{
+                      cep: formData.cep,
+                      street: formData.rua,
+                      number: formData.numero,
+                      complement: formData.complemento || undefined,
+                      neighborhood: formData.bairro,
+                      city: formData.cidade,
+                      state: formData.estado,
+                    }}
                     externalReference={externalReference}
                     subscriptionId={subscriptionId}
                     isSubscription={paymentType === "subscription"}
