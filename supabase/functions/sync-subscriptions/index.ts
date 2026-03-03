@@ -44,9 +44,18 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const mpAccessToken = Deno.env.get("MP_ACCESS_TOKEN")!;
+    const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN")!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Mark as expired: active subscriptions without mp_subscription_id whose expires_at has passed
+    const now = new Date().toISOString();
+    await supabase
+      .from("subscriptions")
+      .update({ status: "expired" })
+      .eq("status", "active")
+      .is("mp_subscription_id", null)
+      .lt("expires_at", now);
 
     const { data: subscriptions, error: fetchError } = await supabase
       .from("subscriptions")

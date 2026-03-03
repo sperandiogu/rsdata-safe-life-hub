@@ -63,8 +63,12 @@ async function processSubscriptionEvent(
 
     if (subRecord) {
       const startedAt = new Date();
-      let expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      const expiresAt = new Date();
+      if (subRecord.billing_period === "anual") {
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      } else {
+        expiresAt.setDate(expiresAt.getDate() + 30);
+      }
 
       await supabase
         .from("subscriptions")

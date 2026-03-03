@@ -23,12 +23,13 @@ import {
 import { Search, Download, Eye, Filter, Calendar, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import SubscriptionDetailsDialog from "@/components/admin/SubscriptionDetailsDialog";
 
 interface Subscription {
   id: string;
   status: string;
-  started_at: string;
-  expires_at: string;
+  started_at: string | null;
+  expires_at: string | null;
   billing_period: string;
   created_at: string;
   customers: {
@@ -45,6 +46,7 @@ interface Subscription {
 const Assinaturas = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -159,8 +161,8 @@ const Assinaturas = () => {
       sub.plans.name,
       (sub.billing_period === "mensal" ? sub.plans.monthly_price : sub.plans.annual_price).toFixed(2),
       sub.status,
-      new Date(sub.started_at).toLocaleDateString("pt-BR"),
-      new Date(sub.expires_at).toLocaleDateString("pt-BR"),
+      sub.started_at ? new Date(sub.started_at).toLocaleDateString("pt-BR") : "—",
+      sub.expires_at ? new Date(sub.expires_at).toLocaleDateString("pt-BR") : "—",
       sub.billing_period,
     ]);
 
@@ -344,13 +346,21 @@ const Assinaturas = () => {
                           <Badge variant="outline">{subscription.billing_period}</Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(subscription.started_at).toLocaleDateString("pt-BR")}
+                          {subscription.started_at
+                            ? new Date(subscription.started_at).toLocaleDateString("pt-BR")
+                            : <span className="text-gray-400">—</span>}
                         </TableCell>
                         <TableCell>
-                          {new Date(subscription.expires_at).toLocaleDateString("pt-BR")}
+                          {subscription.expires_at
+                            ? new Date(subscription.expires_at).toLocaleDateString("pt-BR")
+                            : <span className="text-gray-400">—</span>}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedSubscriptionId(subscription.id)}
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             Ver
                           </Button>
@@ -364,6 +374,13 @@ const Assinaturas = () => {
           )}
         </CardContent>
       </Card>
+      {selectedSubscriptionId && (
+        <SubscriptionDetailsDialog
+          subscriptionId={selectedSubscriptionId}
+          open={!!selectedSubscriptionId}
+          onClose={() => setSelectedSubscriptionId(null)}
+        />
+      )}
     </div>
   );
 };

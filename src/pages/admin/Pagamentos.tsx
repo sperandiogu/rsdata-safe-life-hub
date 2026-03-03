@@ -31,6 +31,7 @@ import {
   Clock,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import PaymentDetailsDialog from "@/components/admin/PaymentDetailsDialog";
 
 interface Payment {
   id: string;
@@ -50,6 +51,7 @@ interface Payment {
 const Pagamentos = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
 
   const { data: payments, isLoading } = useQuery({
     queryKey: ["payments-list"],
@@ -325,7 +327,11 @@ const Pagamentos = () => {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedPaymentId(payment.id)}
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             Ver
                           </Button>
@@ -339,6 +345,13 @@ const Pagamentos = () => {
           )}
         </CardContent>
       </Card>
+      {selectedPaymentId && (
+        <PaymentDetailsDialog
+          paymentId={selectedPaymentId}
+          open={!!selectedPaymentId}
+          onClose={() => setSelectedPaymentId(null)}
+        />
+      )}
     </div>
   );
 };

@@ -53,8 +53,8 @@ interface CustomerDetails {
     id: string;
     status: string;
     billing_period: string;
-    started_at: string;
-    expires_at: string;
+    started_at: string | null;
+    expires_at: string | null;
     mp_subscription_id: string | null;
     created_at: string;
     plans: {
@@ -212,7 +212,8 @@ const CustomerDetailsDialog = ({ customerId, open, onClose }: CustomerDetailsDia
     });
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "—";
     return new Date(dateString).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
