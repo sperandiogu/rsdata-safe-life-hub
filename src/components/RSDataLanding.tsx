@@ -901,9 +901,9 @@ export function RSDataLanding() {
                     Como é feita a implementação do sistema?
                   </AccordionTrigger>
                   <AccordionContent className="text-[#575756]">
-                    Após a contratação, você receberá acesso imediato à plataforma. Nossa equipe de suporte irá guiá-lo
-                    no processo de configuração inicial e importação de dados. Oferecemos treinamentos pela Academia
-                    RSData para garantir que sua equipe aproveite ao máximo todas as funcionalidades do sistema.
+                    Após a contratação, você receberá um email com as informações de acesso à plataforma e à Academia
+                    RSData. Dentro da Academia RSData você poderá realizar os treinamentos gravados e agendar sessões
+                    coletivas para garantir que sua equipe aproveite ao máximo todas as funcionalidades do sistema.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-7">
@@ -911,9 +911,9 @@ export function RSDataLanding() {
                     Como funciona o suporte técnico?
                   </AccordionTrigger>
                   <AccordionContent className="text-[#575756]">
-                    Oferecemos suporte técnico via sistema de chamados com tempo de resposta garantido conforme o plano
-                    contratado. Todos os clientes têm acesso à nossa base de conhecimento e tutoriais em vídeo. Planos
-                    Premium e Plus contam com atendimento prioritário. O plano Ecommerce não inclui acesso ao suporte técnico.
+                    Oferecemos suporte técnico via chat online e WhatsApp conforme o plano contratado. Todos os
+                    clientes têm acesso à nossa base de conhecimento e tutoriais em vídeo na Academia RSData. O plano
+                    Ecommerce não inclui acesso ao chat online nem WhatsApp.
                   </AccordionContent>
                 </AccordionItem>
 
