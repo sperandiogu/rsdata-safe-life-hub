@@ -913,7 +913,18 @@ export function RSDataLanding() {
                   <AccordionContent className="text-[#575756]">
                     Oferecemos suporte técnico via sistema de chamados com tempo de resposta garantido conforme o plano
                     contratado. Todos os clientes têm acesso à nossa base de conhecimento e tutoriais em vídeo. Planos
-                    Premium e Plus contam com atendimento prioritário.
+                    Premium e Plus contam com atendimento prioritário. O plano Ecommerce não inclui acesso ao suporte técnico.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-8">
+                  <AccordionTrigger className="text-left font-medium text-[#575756]">
+                    Sou uma empresa com SESMT próprio, posso assinar estes planos?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-[#575756]">
+                    Estes planos são otimizados para o fluxo de trabalho de consultorias que gerenciam múltiplas empresas.
+                    Para empresas com SESMT próprio, oferecemos módulos específicos de gestão interna e conformidade.
+                    Entre em contato para conhecer a versão corporativa.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
