@@ -744,7 +744,7 @@ export default function FormularioAssinatura() {
 
                       <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
                         <object
-                          data="https://store.rsdata.com.br/termo-aceite-rsdata.pdf#toolbar=1&navpanes=1&scrollbar=1"
+                          data="/termo-aceite-rsdata.pdf#toolbar=1&navpanes=1&scrollbar=1"
                           type="application/pdf"
                           width="100%"
                           height="500"
@@ -758,7 +758,7 @@ export default function FormularioAssinatura() {
                             <Button
                               type="button"
                               variant="outline"
-                              onClick={() => window.open('https://store.rsdata.com.br/termo-aceite-rsdata.pdf', '_blank')}
+                              onClick={() => window.open('/termo-aceite-rsdata.pdf', '_blank')}
                               className="border-[#084D6C] text-[#084D6C] hover:bg-[#084D6C] hover:text-white"
                             >
                               <FileText className="w-4 h-4 mr-2" />
@@ -781,7 +781,7 @@ export default function FormularioAssinatura() {
                         >
                           Li e aceito os{" "}
                           <a
-                            href="https://store.rsdata.com.br/termo-aceite-rsdata.pdf"
+                            href="/termo-aceite-rsdata.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[#084D6C] hover:underline font-medium"
