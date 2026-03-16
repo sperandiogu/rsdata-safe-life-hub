@@ -22,53 +22,60 @@ Por padrão, apenas recursos da mesma origem são permitidos.
 #### `script-src`
 Permite scripts de:
 - `'self'` - Scripts do próprio domínio
-- `'unsafe-inline'` - Scripts inline (necessário para Google Tag Manager)
-- `'unsafe-eval'` - Eval de JavaScript (necessário para MercadoPago SDK)
-- `https://www.googletagmanager.com` - Google Tag Manager
-- `https://sdk.mercadopago.com` - MercadoPago SDK
-- `https://http2.mlstatic.com` - Recursos estáticos do MercadoPago
-- `https://api.mercadopago.com` - API do MercadoPago
+- `'unsafe-inline'` - Scripts inline (necessário para GTM init script no `<head>` do index.html)
+- `'unsafe-eval'` - Eval de JavaScript (necessário para MercadoPago SDK Payment Brick)
+- `https://www.googletagmanager.com` - Google Tag Manager (gtm.js)
+- `https://sdk.mercadopago.com` - MercadoPago SDK (injetado via `@mercadopago/sdk-js`)
+- `https://http2.mlstatic.com` - Recursos estáticos do MercadoPago (chunks JS carregados pelo SDK)
 
 #### `style-src`
 Permite estilos de:
 - `'self'` - Estilos do próprio domínio
-- `'unsafe-inline'` - Estilos inline (necessário para componentes React)
-- `https://fonts.googleapis.com` - Google Fonts
+- `'unsafe-inline'` - Estilos inline (componentes React, chart.tsx dangerouslySetInnerHTML, progress.tsx, MercadoPago Brick)
+- `https://http2.mlstatic.com` - CSS do MercadoPago Payment Brick
+- `https://fonts.googleapis.com` - Google Fonts (pode ser carregado via GTM)
 
 #### `font-src`
 Permite fontes de:
 - `'self'` - Fontes do próprio domínio
-- `https://fonts.gstatic.com` - Google Fonts
-- `data:` - Fontes em formato data URI
+- `https://fonts.gstatic.com` - Google Fonts (pode ser carregado via GTM)
+- `https://http2.mlstatic.com` - Fontes do MercadoPago Brick
+- `data:` - Fontes em formato data URI (Vite bundle)
 
 #### `img-src`
 Permite imagens de:
 - `'self'` - Imagens do próprio domínio
 - `data:` - Imagens em formato data URI
-- `blob:` - Imagens blob
-- `https:` - Todas as imagens HTTPS (necessário para imagens externas da RSData e Unsplash)
-- `http:` - Imagens HTTP (apenas durante desenvolvimento)
+- `blob:` - Imagens blob (export CSV com URL.createObjectURL)
+- `https:` - Todas as imagens HTTPS (favicon rsdata.com.br, CDN greatsoftwares.com.br, lovable.dev OG, ícones MercadoPago, pixels do GA)
 
 #### `connect-src`
-Permite conexões para:
+Permite conexões (fetch/XHR) para:
 - `'self'` - Mesma origem
-- `https://siwrumbueegavdiwzfnb.supabase.co` - API Supabase
-- `https://publica.cnpj.ws` - API de consulta de CNPJ
-- `https://viacep.com.br` - API de consulta de CEP
-- `https://hook.us2.make.com` - Webhooks do Make.com
-- `https://api.mercadopago.com` - API do MercadoPago
-- `https://www.google-analytics.com` - Google Analytics
+- `https://siwrumbueegavdiwzfnb.supabase.co` - API Supabase (PostgREST + Edge Functions)
+- `https://api.mercadopago.com` - API do MercadoPago (pagamentos, assinaturas)
+- `https://events.mercadopago.com` - Tracking interno do MercadoPago SDK
+- `https://sdk.mercadopago.com` - Fetch calls internos do SDK MercadoPago
+- `https://http2.mlstatic.com` - Recursos dinâmicos do MercadoPago
+- `https://publica.cnpj.ws` - Consulta CNPJ (FormularioAssinatura.tsx)
+- `https://viacep.com.br` - Consulta CEP (FormularioAssinatura.tsx)
+- `https://hook.us2.make.com` - Webhook Make.com (FormularioAssinatura.tsx)
+- `https://www.google-analytics.com` - Google Analytics Universal
+- `https://analytics.google.com` - Google Analytics 4
 - `https://www.googletagmanager.com` - Google Tag Manager
+- `https://stats.g.doubleclick.net` - Google Ads/DoubleClick conversions (via GTM)
+- `https://region1.google-analytics.com` - GA4 regional endpoint
 
 #### `frame-src`
 Permite iframes de:
 - `'self'` - Mesma origem
-- `https://www.googletagmanager.com` - Google Tag Manager
-- `https://store.rsdata.com.br` - Visualizador de PDF
-- `https://sdk.mercadopago.com` - MercadoPago checkout
+- `https://www.googletagmanager.com` - GTM noscript iframe (index.html)
+- `https://sdk.mercadopago.com` - MercadoPago Payment Brick (renderiza em iframe)
+- `https://*.mercadopago.com` - Redirects de pagamento MercadoPago
+- `https://*.mercadolibre.com` - Recursos compartilhados MercadoPago/MercadoLibre
 
-#### `object-src 'none'`
-Bloqueia plugins como Flash, Java, etc.
+#### `object-src 'self'`
+Permite objetos embarcados da mesma origem (necessário para `<object>` do PDF de termos em FormularioAssinatura.tsx).
 
 #### `base-uri 'self'`
 Restringe a tag `<base>` à mesma origem.
@@ -76,10 +83,11 @@ Restringe a tag `<base>` à mesma origem.
 #### `form-action`
 Permite submissão de formulários para:
 - `'self'` - Mesma origem
-- `https://api.mercadopago.com` - Processamento de pagamentos
+- `https://*.mercadopago.com` - Redirects de processamento de pagamento
 
 #### `frame-ancestors 'self'`
 Permite que a página seja incorporada apenas na mesma origem (proteção contra clickjacking).
+**Nota:** Esta diretiva só funciona via header HTTP (netlify.toml/_headers), não via meta tag.
 
 #### `upgrade-insecure-requests`
 Força o upgrade de todas as requisições HTTP para HTTPS.
