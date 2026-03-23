@@ -315,19 +315,21 @@ export function RSDataLanding() {
         </div>
       </header>
 
-      {/* CTA Banner */}
+      {/* Announcement Bar - Consultorias */}
       <div className="bg-[#084D6C] text-white py-3">
-        <a
-          href="https://www.rsdata.com.br/store/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <div className="container mx-auto px-4 text-center">
-            <span className="font-medium">Conheça o Plano Ecommerce da RSData</span>
-            <ArrowRight className="inline-block ml-2 h-4 w-4" />
-          </div>
-        </a>
+        <div className="container mx-auto px-4 text-center">
+          <span className="font-semibold">Planos exclusivos para Consultorias de SST</span>
+          <span className="mx-3 hidden sm:inline">|</span>
+          <a
+            href="https://www.rsdata.com.br/store/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-white/90 transition-colors"
+          >
+            Conheça o Plano Ecommerce da RSData
+            <ArrowRight className="inline-block ml-1 h-4 w-4" />
+          </a>
+        </div>
       </div>
 
       {/* Hero Section */}
@@ -470,9 +472,12 @@ export function RSDataLanding() {
         <div className="container mx-auto px-4">
           <AnimateOnScroll animation="fade-up">
             <div className="text-center mb-12">
+              <Badge className="mb-4 bg-[#084D6C]/10 text-[#084D6C] hover:bg-[#084D6C]/10 text-sm px-4 py-1">
+                Planos para Consultorias de SST
+              </Badge>
               <h2 className="text-3xl font-bold text-[#575756] mb-4">Escolha seu plano ideal</h2>
               <p className="text-lg text-[#575756] max-w-2xl mx-auto mb-8">
-                Selecione o plano que melhor atende às necessidades da sua empresa
+                Selecione o plano que melhor atende às necessidades da sua consultoria
               </p>
 
               {/* Period Selector */}
