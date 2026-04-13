@@ -916,9 +916,9 @@ export function RSDataLanding() {
                     Como funciona o suporte técnico?
                   </AccordionTrigger>
                   <AccordionContent className="text-[#575756]">
-                    Oferecemos suporte técnico via chat online e WhatsApp conforme o plano contratado. Todos os
+                    Oferecemos suporte técnico via chamados, chat online e WhatsApp conforme o plano contratado. Todos os
                     clientes têm acesso à nossa base de conhecimento e tutoriais em vídeo na Academia RSData. O plano
-                    Ecommerce não inclui acesso ao chat online nem WhatsApp.
+                    Ecommerce não inclui nenhum tipo de suporte técnico (sem chamados, chat online ou WhatsApp).
                   </AccordionContent>
                 </AccordionItem>
 
