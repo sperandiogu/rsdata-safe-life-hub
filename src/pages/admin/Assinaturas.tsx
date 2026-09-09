@@ -20,7 +20,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Download, Eye, Filter, Calendar, RefreshCw } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Search, Download, Eye, Filter, Calendar, RefreshCw, Ban } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import SubscriptionDetailsDialog from "@/components/admin/SubscriptionDetailsDialog";
@@ -80,6 +91,49 @@ const Assinaturas = () => {
     onError: (error: any) => {
       toast({
         title: "Erro na sincronização",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (subscriptionId: string) => {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      // No anon-key fallback: cancel-subscription requires an admin JWT, so a stale
+      // session must fail here with a clear message instead of a generic 401.
+      if (!session?.access_token) {
+        throw new Error("Sessão expirada. Faça login novamente.");
+      }
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/cancel-subscription`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subscription_id: subscriptionId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao cancelar assinatura");
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["subscriptions-list"] });
+      toast({
+        title: "Assinatura cancelada",
+        description: data.message,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao cancelar",
         description: error.message,
         variant: "destructive",
       });
@@ -364,6 +418,43 @@ const Assinaturas = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             Ver
                           </Button>
+                          {(subscription.status === "active" ||
+                            subscription.status === "pending") && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  disabled={cancelMutation.isPending}
+                                >
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  Cancelar
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    A assinatura de <strong>{subscription.customers.name}</strong>{" "}
+                                    ({subscription.plans.name}) será cancelada imediatamente no
+                                    Mercado Pago e as cobranças recorrentes serão interrompidas.
+                                    Esta ação não pode ser desfeita — para reativar, o cliente
+                                    precisa assinar novamente.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Voltar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-red-600 hover:bg-red-700"
+                                    onClick={() => cancelMutation.mutate(subscription.id)}
+                                  >
+                                    Confirmar cancelamento
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
