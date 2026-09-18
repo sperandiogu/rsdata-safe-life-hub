@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -221,6 +223,11 @@ Deno.serve(async (req: Request) => {
         const results = page.results || [];
 
         for (const mp of results) {
+          // Every abandoned or retried checkout leaves a dead preapproval behind, so
+          // cancelled/pending ones are noise, not drift. Only a live preapproval with
+          // no local row is a real problem: money moving that the panel cannot see.
+          if (mp.status === "cancelled" || mp.status === "pending") continue;
+
           if (!known.has(mp.id)) {
             orphans.push({
               mp_subscription_id: mp.id,
@@ -244,7 +251,7 @@ Deno.serve(async (req: Request) => {
     // An orphan you cannot identify cannot be reconciled, and the search payload
     // carries no payer contact. Pull the full record for the ones still live.
     for (const orphan of orphans) {
-      if (orphan.status !== "authorized" && orphan.status !== "pending") continue;
+      if (!orphan.mp_subscription_id) continue;
       try {
         const detail = await fetch(
           `https://api.mercadopago.com/preapproval/${orphan.mp_subscription_id}`,
@@ -259,7 +266,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Sincronização concluída. ${syncResults.updated} assinaturas atualizadas, ${syncResults.errors} erros, ${orphans.length} no MP sem registro local`,
+        message: `Sincronização concluída. ${plural(syncResults.updated, "assinatura atualizada", "assinaturas atualizadas")}, ${plural(syncResults.errors, "erro", "erros")}, ${plural(orphans.length, "ativa no MP sem registro local", "ativas no MP sem registro local")}`,
         results: { ...syncResults, orphans },
       }),
       {
