@@ -38,19 +38,35 @@ async function processSubscriptionEvent(
     .maybeSingle();
 
   if (!subscriptionRecord) {
-    console.log("Subscription not found in database, checking by external_reference");
+    console.log("Subscription not found by mp_subscription_id, linking via external_reference");
 
-    const { data: subByRef } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("id", subscription.external_reference)
+    // external_reference is the `rsdata_<plan>_<ts>_<rand>` string, and it lives on
+    // payments, never on subscriptions. The old lookup compared it against
+    // subscriptions.id (uuid), which errors out in Postgres, so an unlinked
+    // preapproval stayed orphaned forever and never showed up in the admin panel.
+    const { data: paymentByRef, error: refError } = await supabase
+      .from("payments")
+      .select("subscription_id")
+      .eq("external_reference", subscription.external_reference)
       .maybeSingle();
 
-    if (subByRef) {
-      await supabase
+    if (refError) {
+      console.error("Lookup by external_reference failed:", refError.message);
+    } else if (paymentByRef?.subscription_id) {
+      const { error: linkError } = await supabase
         .from("subscriptions")
         .update({ mp_subscription_id: subscriptionId })
-        .eq("id", subByRef.id);
+        .eq("id", paymentByRef.subscription_id);
+
+      if (linkError) {
+        console.error("Failed to link subscription:", linkError.message);
+      } else {
+        console.log(`Linked subscription ${paymentByRef.subscription_id} to ${subscriptionId}`);
+      }
+    } else {
+      console.error(
+        `Orphan preapproval ${subscriptionId}: no payment row for external_reference ${subscription.external_reference}`
+      );
     }
   }
 

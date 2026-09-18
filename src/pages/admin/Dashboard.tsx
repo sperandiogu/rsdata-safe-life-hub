@@ -70,19 +70,25 @@ const Dashboard = () => {
   const syncMutation = useMutation({
     mutationFn: async () => {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const { data: { session } } = await supabase.auth.getSession();
+
+      // No anon-key fallback: the anon key is a valid JWT but not an admin, so it
+      // would now come back 403. Fail here with something the user can act on.
+      if (!session?.access_token) {
+        throw new Error("Sessão expirada. Faça login novamente.");
+      }
 
       const response = await fetch(`${supabaseUrl}/functions/v1/sync-subscriptions`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session?.access_token || supabaseAnonKey}`,
+          Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao sincronizar assinaturas");
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || "Erro ao sincronizar assinaturas");
       }
 
       return response.json();
@@ -90,9 +96,13 @@ const Dashboard = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       queryClient.invalidateQueries({ queryKey: ["subscriptions-by-plan"] });
+      // The function answers 200 even when rows fail to sync or Mercado Pago holds
+      // subscriptions we have no record of, so surface that instead of a green toast.
+      const drifted = (data.results?.errors ?? 0) + (data.results?.orphans?.length ?? 0);
       toast({
-        title: "Sincronização concluída",
+        title: drifted > 0 ? "Sincronização com pendências" : "Sincronização concluída",
         description: data.message,
+        variant: drifted > 0 ? "destructive" : undefined,
       });
     },
     onError: (error: any) => {

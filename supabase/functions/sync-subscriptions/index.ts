@@ -48,6 +48,42 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+    // Same admin guard as cancel-subscription. verify_jwt alone is not enough here:
+    // the anon key is itself a valid JWT and ships in the public bundle, so without
+    // this check anyone could read every Mercado Pago id and amount off this endpoint.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: adminUser } = await supabase
+      .from("admin_users")
+      .select("is_active")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!adminUser?.is_active) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Mark as expired: active subscriptions without mp_subscription_id whose expires_at has passed
     const now = new Date().toISOString();
     await supabase
@@ -164,11 +200,67 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Drift detection: preapprovals that exist in Mercado Pago but have no row here.
+    // The loop above only walks rows we already know about, so an orphan is invisible
+    // to it — and invisible in the admin panel — until someone reconciles by hand.
+    const known = new Set(subscriptions.map((s) => s.mp_subscription_id));
+    const orphans: any[] = [];
+
+    try {
+      for (let offset = 0; ; offset += 50) {
+        const searchResponse = await fetch(
+          `https://api.mercadopago.com/preapproval/search?limit=50&offset=${offset}`,
+          { headers: { Authorization: `Bearer ${mpAccessToken}` } }
+        );
+
+        if (!searchResponse.ok) {
+          throw new Error(`MP search returned ${searchResponse.status}`);
+        }
+
+        const page = await searchResponse.json();
+        const results = page.results || [];
+
+        for (const mp of results) {
+          if (!known.has(mp.id)) {
+            orphans.push({
+              mp_subscription_id: mp.id,
+              status: mp.status,
+              external_reference: mp.external_reference ?? null,
+              payer_id: mp.payer_id ?? null,
+              preapproval_plan_id: mp.preapproval_plan_id ?? null,
+              amount: mp.auto_recurring?.transaction_amount ?? null,
+              reason: mp.reason,
+              date_created: mp.date_created,
+            });
+          }
+        }
+
+        if (results.length < 50 || offset + 50 >= (page.paging?.total ?? 0)) break;
+      }
+    } catch (error: any) {
+      orphans.push({ error: `Orphan scan failed: ${error.message}` });
+    }
+
+    // An orphan you cannot identify cannot be reconciled, and the search payload
+    // carries no payer contact. Pull the full record for the ones still live.
+    for (const orphan of orphans) {
+      if (orphan.status !== "authorized" && orphan.status !== "pending") continue;
+      try {
+        const detail = await fetch(
+          `https://api.mercadopago.com/preapproval/${orphan.mp_subscription_id}`,
+          { headers: { Authorization: `Bearer ${mpAccessToken}` } }
+        );
+        if (detail.ok) orphan.detail = await detail.json();
+      } catch (_) {
+        // best effort only; the orphan is already reported without it
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Sincronização concluída. ${syncResults.updated} assinaturas atualizadas, ${syncResults.errors} erros`,
-        results: syncResults,
+        message: `Sincronização concluída. ${syncResults.updated} assinaturas atualizadas, ${syncResults.errors} erros, ${orphans.length} no MP sem registro local`,
+        results: { ...syncResults, orphans },
       }),
       {
         headers: {
