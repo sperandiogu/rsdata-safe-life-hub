@@ -876,7 +876,7 @@ export default function FormularioAssinatura() {
                     onReady={() => console.log("MercadoPago checkout ready")}
                     onError={(error) => {
                       console.error("MercadoPago error:", error);
-                      setPaymentError("Erro ao carregar opcoes de pagamento. Tente novamente.");
+                      setPaymentError(error.message);
                     }}
                   />
                 )}

@@ -57,6 +57,7 @@ Permite conexões (fetch/XHR) para:
 - `https://events.mercadopago.com` - Tracking interno do MercadoPago SDK
 - `https://sdk.mercadopago.com` - Fetch calls internos do SDK MercadoPago
 - `https://http2.mlstatic.com` - Recursos dinâmicos do MercadoPago
+- `https://*.mercadolibre.com` / `https://*.mercadolivre.com` - Fingerprint de dispositivo (Device ID) do SDK MercadoPago, usado pelo antifraude
 - `https://publica.cnpj.ws` - Consulta CNPJ (FormularioAssinatura.tsx)
 - `https://viacep.com.br` - Consulta CEP (FormularioAssinatura.tsx)
 - `https://hook.us2.make.com` - Webhook Make.com (FormularioAssinatura.tsx)

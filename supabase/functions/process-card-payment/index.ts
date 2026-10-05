@@ -107,6 +107,7 @@ Deno.serve(async (req: Request) => {
             id: externalReference,
             title: `RSData - Plano ${planName} (${planType})`,
             description: `Assinatura do plano ${planName} - ${planType}`,
+            category_id: "services",
             quantity: 1,
             unit_price: formData.transaction_amount,
           },

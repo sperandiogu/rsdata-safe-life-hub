@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { MERCADOPAGO_PUBLIC_KEY, processCardPayment } from "@/lib/mercadopago";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { IPaymentBrickCustomization } from "@mercadopago/sdk-react/bricks/payment/type";
-import type { ICardPaymentFormData, ICardPaymentBrickPayer } from "@mercadopago/sdk-react/bricks/cardPayment/type";
+import type { IPaymentBrickCustomization, IPaymentFormData } from "@mercadopago/sdk-react/esm/bricks/payment/type";
+import type { ICardPaymentFormData, ICardPaymentBrickPayer } from "@mercadopago/sdk-react/esm/bricks/cardPayment/type";
+import type { IBrickError } from "@mercadopago/sdk-react/esm/bricks/util/types/common";
 
 interface MercadoPagoCheckoutProps {
   preferenceId: string;
@@ -30,6 +31,15 @@ interface MercadoPagoCheckoutProps {
   onReady?: () => void;
   onError?: (error: Error) => void;
 }
+
+const REJECTION_MESSAGES: Record<string, string> = {
+  cc_rejected_high_risk: "Pagamento recusado pela análise de segurança do Mercado Pago. Tente com outro cartão.",
+  cc_rejected_insufficient_amount: "Cartão sem limite suficiente. Tente com outro cartão.",
+  cc_rejected_call_for_authorize: "Seu banco precisa autorizar este pagamento. Ligue para o banco e tente novamente.",
+  cc_rejected_bad_filled_security_code: "Código de segurança do cartão inválido.",
+  cc_rejected_bad_filled_date: "Data de validade do cartão inválida.",
+  cc_rejected_duplicated_payment: "Você já fez um pagamento com esse valor. Verifique seu e-mail antes de tentar de novo.",
+};
 
 export function MercadoPagoCheckout({
   preferenceId,
@@ -97,7 +107,8 @@ export function MercadoPagoCheckout({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Falha ao criar assinatura");
+        console.error("Subscription rejected:", errorData);
+        throw new Error("Não foi possível autorizar o cartão. Confira os dados ou tente com outro cartão.");
       }
 
       const result = await response.json();
@@ -109,24 +120,26 @@ export function MercadoPagoCheckout({
     }
   };
 
-  const onSubmitPayment = async (formData: { formData: Record<string, unknown> }) => {
+  const onSubmitPayment = async ({ formData }: IPaymentFormData) => {
     setIsProcessing(true);
     try {
       const cleanDocument = customerDocument.replace(/\D/g, "");
       const isCompany = cleanDocument.length === 14;
+      // The brick collects the cardholder's document; MP's anti-fraud matches it against the card
+      const brickDocument = formData.payer?.identification;
 
       const paymentData = {
         formData: {
-          token: formData.formData.token as string,
-          issuer_id: String(formData.formData.issuer_id || ""),
-          payment_method_id: formData.formData.payment_method_id as string,
+          token: formData.token,
+          issuer_id: String(formData.issuer_id || ""),
+          payment_method_id: formData.payment_method_id,
           transaction_amount: amount,
-          installments: Number(formData.formData.installments) || 1,
+          installments: Number(formData.installments) || 1,
           payer: {
             email: customerEmail,
             first_name: customerName.split(" ")[0],
             last_name: customerName.split(" ").slice(1).join(" ") || customerName,
-            identification: {
+            identification: brickDocument?.number ? brickDocument : {
               type: isCompany ? "CNPJ" : "CPF",
               number: cleanDocument,
             },
@@ -160,22 +173,25 @@ export function MercadoPagoCheckout({
         navigate(`/pagamento-confirmado?status=pending&external_reference=${externalReference}&payment_id=${result.id}`);
       } else {
         setIsProcessing(false);
-        onError?.(new Error(`Pagamento ${result.status}: ${result.status_detail}`));
+        onError?.(new Error(
+          REJECTION_MESSAGES[result.status_detail] ?? `Pagamento recusado (${result.status_detail}). Tente com outro cartão.`
+        ));
       }
     } catch (error) {
       console.error("Error processing payment:", error);
       setIsProcessing(false);
-      onError?.(error instanceof Error ? error : new Error(String(error)));
+      onError?.(new Error("Não foi possível processar o pagamento. Tente novamente ou use outro cartão."));
     }
   };
 
-  const onErrorCallback = (error: unknown) => {
-    console.error("MercadoPago Brick error:", error);
-    let errorMessage = "Erro ao carregar opcoes de pagamento";
-    if (error && typeof error === "object" && "message" in error && error.message) {
-      errorMessage = String(error.message);
+  const onErrorCallback = (error: IBrickError) => {
+    // non_critical errors fire during normal card entry and the brick shows them inline
+    if (error.type !== "critical") {
+      console.warn("MercadoPago Brick warning:", error);
+      return;
     }
-    onError?.(new Error(errorMessage));
+    console.error("MercadoPago Brick error:", error);
+    onError?.(new Error("Erro ao carregar opções de pagamento. Recarregue a página e tente novamente."));
   };
 
   const paymentCustomization: IPaymentBrickCustomization = {
