@@ -28,6 +28,7 @@ interface RequestPayload {
   planType: string;
   customerName?: string;
   customerPhone?: string;
+  deviceId?: string;
   customerAddress?: {
     cep: string;
     street: string;
@@ -61,7 +62,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload: RequestPayload = await req.json();
-    const { formData, externalReference, planName, planType, customerName, customerPhone, customerAddress } = payload;
+    const { formData, externalReference, planName, planType, customerName, customerPhone, customerAddress, deviceId } = payload;
 
     const payerFirstName = customerName?.split(" ")[0] || "";
     const payerLastName = customerName?.split(" ").slice(1).join(" ") || "";
@@ -138,6 +139,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
         "X-Idempotency-Key": `${externalReference}-${Date.now()}`,
+        ...(deviceId ? { "X-meli-session-id": deviceId } : {}),
       },
       body: JSON.stringify(paymentBody),
     });

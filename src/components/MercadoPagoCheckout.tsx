@@ -41,6 +41,9 @@ const REJECTION_MESSAGES: Record<string, string> = {
   cc_rejected_duplicated_payment: "Você já fez um pagamento com esse valor. Verifique seu e-mail antes de tentar de novo.",
 };
 
+// Set by security.js (index.html); MP's anti-fraud expects it as X-meli-session-id
+const getDeviceId = () => (window as Window & { MP_DEVICE_SESSION_ID?: string }).MP_DEVICE_SESSION_ID;
+
 export function MercadoPagoCheckout({
   preferenceId,
   amount,
@@ -91,6 +94,7 @@ export function MercadoPagoCheckout({
         paymentMethodId: formData.payment_method_id,
         installments: formData.installments,
         issuerId: formData.issuer_id,
+        deviceId: getDeviceId(),
       };
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -108,7 +112,10 @@ export function MercadoPagoCheckout({
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("Subscription rejected:", errorData);
-        throw new Error("Não foi possível autorizar o cartão. Confira os dados ou tente com outro cartão.");
+        // Browser autofill can tokenize the card without the CVV, which MP rejects for subscriptions
+        throw new Error(/cvv/i.test(String(errorData.message ?? ""))
+          ? "Digite novamente o código de segurança (CVV) do cartão e tente de novo."
+          : "Não foi possível autorizar o cartão. Confira os dados ou tente com outro cartão.");
       }
 
       const result = await response.json();
@@ -163,6 +170,7 @@ export function MercadoPagoCheckout({
         customerName,
         customerPhone,
         customerAddress,
+        deviceId: getDeviceId(),
       };
 
       const result = await processCardPayment(paymentData);

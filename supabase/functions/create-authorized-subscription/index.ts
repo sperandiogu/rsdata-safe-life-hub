@@ -13,6 +13,7 @@ interface SubscriptionRequest {
   planName: string;
   externalReference: string;
   subscriptionId: string;
+  deviceId?: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -37,7 +38,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload: SubscriptionRequest = await req.json();
-    const { cardToken, email, amount, planName, externalReference, subscriptionId } = payload;
+    const { cardToken, email, amount, planName, externalReference, subscriptionId, deviceId } = payload;
 
     const startDate = new Date();
     startDate.setHours(startDate.getHours() + 1);
@@ -65,11 +66,15 @@ Deno.serve(async (req: Request) => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
+        ...(deviceId ? { "X-meli-session-id": deviceId } : {}),
       },
       body: JSON.stringify(preapproval),
     });
 
     const subscriptionData = await subscriptionResponse.json();
+
+    // MP support needs this id to explain a rejected card validation (CC_VAL_433)
+    console.log("MP x-request-id:", subscriptionResponse.headers.get("x-request-id"), "device id sent:", Boolean(deviceId));
 
     console.log("Subscription response:", JSON.stringify(subscriptionData, null, 2));
 

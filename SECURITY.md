@@ -26,6 +26,7 @@ Permite scripts de:
 - `'unsafe-eval'` - Eval de JavaScript (necessário para MercadoPago SDK Payment Brick)
 - `https://www.googletagmanager.com` - Google Tag Manager (gtm.js)
 - `https://sdk.mercadopago.com` - MercadoPago SDK (injetado via `@mercadopago/sdk-js`)
+- `https://www.mercadopago.com` - `security.js` do MercadoPago, gera o Device ID (`MP_DEVICE_SESSION_ID`) enviado ao antifraude como `X-meli-session-id`
 - `https://http2.mlstatic.com` - Recursos estáticos do MercadoPago (chunks JS carregados pelo SDK)
 
 #### `style-src`
