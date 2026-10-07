@@ -322,68 +322,54 @@ export default function FormularioAssinatura() {
       console.log("✅ Cliente criado:", customerId);
       console.log("✅ Assinatura criada:", dbSubscriptionId);
 
-      const isMonthly = planData.planType.toLowerCase() === "mensal";
-      console.log("📅 É plano mensal?", isMonthly);
-
-      if (isMonthly) {
-        console.log("💳 Configurando pagamento recorrente...");
-        await savePaymentToDatabase(
-          externalReference,
-          "",
-          customerId,
-          dbSubscriptionId
-        );
-        console.log("✅ Pagamento salvo no banco");
-
-        setPaymentType("subscription");
-        setPreferenceId("");
-        setExternalReference(externalReference);
-        setSubscriptionId(dbSubscriptionId);
-        console.log("🎯 Mudando para tela de pagamento...");
-        setCurrentStep("payment");
-      } else {
-        console.log("💰 Criando preferência de pagamento único...");
-        const preferenceResponse = await createPaymentPreference({
-          plan: {
-            name: planData.planName,
-            type: planData.planType,
-            price: planData.price,
-            planId: planData.planId,
+      console.log("💰 Criando preferência de pagamento...");
+      const preferenceResponse = await createPaymentPreference({
+        plan: {
+          name: planData.planName,
+          type: planData.planType,
+          price: planData.price,
+          planId: planData.planId,
+        },
+        customer: {
+          email: formData.email.toLowerCase(),
+          name: formData.nomeRazaoSocial,
+          document: formData.cpfCnpj,
+          phone: formData.telefone,
+          address: {
+            cep: formData.cep,
+            street: formData.rua,
+            number: formData.numero,
+            complement: formData.complemento || null,
+            neighborhood: formData.bairro,
+            city: formData.cidade,
+            state: formData.estado.toUpperCase(),
           },
-          customer: {
-            email: formData.email.toLowerCase(),
-            name: formData.nomeRazaoSocial,
-            document: formData.cpfCnpj,
-            phone: formData.telefone,
-            address: {
-              cep: formData.cep,
-              street: formData.rua,
-              number: formData.numero,
-              complement: formData.complemento || null,
-              neighborhood: formData.bairro,
-              city: formData.cidade,
-              state: formData.estado.toUpperCase(),
-            },
-          },
-          externalReference,
-          subscriptionId: dbSubscriptionId,
-        });
-        console.log("✅ Preferência criada:", preferenceResponse);
+        },
+        externalReference,
+        subscriptionId: dbSubscriptionId,
+      });
+      console.log("✅ Preferência criada:", preferenceResponse);
 
-        await savePaymentToDatabase(
-          externalReference,
-          preferenceResponse.preferenceId || "",
-          customerId,
-          dbSubscriptionId
-        );
-        console.log("✅ Pagamento salvo no banco");
+      await savePaymentToDatabase(
+        externalReference,
+        preferenceResponse.preferenceId || "",
+        customerId,
+        dbSubscriptionId
+      );
+      console.log("✅ Pagamento salvo no banco");
 
-        setPaymentType("one_time");
-        setPreferenceId(preferenceResponse.preferenceId || "");
-        setExternalReference(externalReference);
-        console.log("🎯 Mudando para tela de pagamento...");
-        setCurrentStep("payment");
+      if (preferenceResponse.type === "subscription") {
+        // MP rejects card validation for preapprovals created with our card token (CC_VAL_433
+        // since Sep 2026), so monthly plans subscribe on Mercado Pago's own checkout instead.
+        window.location.href = preferenceResponse.initPoint;
+        return;
       }
+
+      setPaymentType("one_time");
+      setPreferenceId(preferenceResponse.preferenceId || "");
+      setExternalReference(externalReference);
+      console.log("🎯 Mudando para tela de pagamento...");
+      setCurrentStep("payment");
       console.log("✅ Processo concluído com sucesso!");
     } catch (error) {
       console.error("❌ Erro detalhado:", error);

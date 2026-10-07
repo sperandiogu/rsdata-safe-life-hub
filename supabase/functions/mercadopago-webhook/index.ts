@@ -393,7 +393,7 @@ Deno.serve(async (req: Request) => {
 
     console.log("Webhook received:", { topic, resourceId, body });
 
-    if (topic === "subscription" || topic === "preapproval") {
+    if (topic === "subscription" || topic === "preapproval" || topic === "subscription_preapproval") {
       if (resourceId) {
         await processSubscriptionEvent(
           supabase,
