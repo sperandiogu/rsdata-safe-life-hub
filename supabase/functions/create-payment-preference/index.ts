@@ -61,7 +61,8 @@ async function createRecurringSubscription(
       transaction_amount: plan.price,
       currency_id: "BRL",
     },
-    back_url: `${backUrls.success}&preapproval_id=$init_point_preapproval_id`,
+    // Mercado Pago appends preapproval_id itself on return; a "$placeholder" here is rejected as an invalid URL.
+    back_url: backUrls.success,
     status: "pending",
   };
 

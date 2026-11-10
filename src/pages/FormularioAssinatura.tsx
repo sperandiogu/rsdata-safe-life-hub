@@ -780,6 +780,13 @@ export default function FormularioAssinatura() {
                     </div>
                   </div>
 
+                  {paymentError && (
+                    <div role="alert" className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
+                      <p className="text-sm text-red-700">{paymentError}</p>
+                    </div>
+                  )}
+
                   <div className="flex flex-col sm:flex-row gap-4 pt-6">
                     <Button
                       type="button"
