@@ -78,6 +78,8 @@ async function processSubscriptionEvent(
       .maybeSingle();
 
     if (subRecord) {
+      // plans has monthly_price/annual_price, no "price" column.
+      const planPrice = subRecord.billing_period === "anual" ? subRecord.plan.annual_price : subRecord.plan.monthly_price;
       const startedAt = new Date();
       const expiresAt = new Date();
       if (subRecord.billing_period === "anual") {
@@ -153,8 +155,8 @@ async function processSubscriptionEvent(
         plano: {
           nome: subRecord.plan.name,
           tipo: subRecord.billing_period === 'anual' ? 'Anual' : 'Mensal',
-          valor: subRecord.plan.price,
-          valorFormatado: `R$ ${subRecord.plan.price.toFixed(2).replace(".", ",")}`,
+          valor: planPrice,
+          valorFormatado: `R$ ${planPrice.toFixed(2).replace(".", ",")}`,
           categoria: subRecord.billing_period === 'anual' ? "ANUAL" : "MENSAL",
         },
         assinatura: {
@@ -203,7 +205,7 @@ async function processSubscriptionEvent(
               customerEmail: subRecord.customer.email,
               planName: subRecord.plan.name,
               planType: subRecord.billing_period === "mensal" ? "monthly" : "yearly",
-              planPrice: subRecord.plan.price,
+              planPrice: planPrice,
               subscriptionStartDate: startedAt.toISOString(),
               subscriptionEndDate: expiresAt.toISOString(),
             },
@@ -263,7 +265,7 @@ async function processSubscriptionEvent(
               addressCep: addressData?.cep || "",
               planName: subRecord.plan.name,
               planType: subRecord.billing_period === "mensal" ? "monthly" : "yearly",
-              planPrice: subRecord.plan.price,
+              planPrice: planPrice,
               subscriptionId: subRecord.id,
               subscriptionStartDate: startedAt.toISOString(),
               subscriptionEndDate: expiresAt.toISOString(),

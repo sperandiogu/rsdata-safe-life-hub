@@ -91,6 +91,8 @@ Deno.serve(async (req: Request) => {
     const mpSubscription = await mpResponse.json();
 
     if (mpSubscription.status === "authorized") {
+      // plans has monthly_price/annual_price, no "price" column.
+      const planPrice = subRecord.billing_period === "anual" ? subRecord.plan.annual_price : subRecord.plan.monthly_price;
       const startedAt = new Date();
       let expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30);
@@ -142,8 +144,8 @@ Deno.serve(async (req: Request) => {
         plano: {
           nome: subRecord.plan.name,
           tipo: subRecord.billing_period === 'anual' ? 'Anual' : 'Mensal',
-          valor: subRecord.plan.price,
-          valorFormatado: `R$ ${subRecord.plan.price.toFixed(2).replace(".", ",")}`,
+          valor: planPrice,
+          valorFormatado: `R$ ${planPrice.toFixed(2).replace(".", ",")}`,
           categoria: subRecord.billing_period === 'anual' ? "ANUAL" : "MENSAL",
         },
         assinatura: {
@@ -192,7 +194,7 @@ Deno.serve(async (req: Request) => {
               customerEmail: subRecord.customer.email,
               planName: subRecord.plan.name,
               planType: subRecord.billing_period === "mensal" ? "monthly" : "yearly",
-              planPrice: subRecord.plan.price,
+              planPrice: planPrice,
               subscriptionStartDate: startedAt.toISOString(),
               subscriptionEndDate: expiresAt.toISOString(),
             },
@@ -252,7 +254,7 @@ Deno.serve(async (req: Request) => {
               addressCep: addressData?.cep || "",
               planName: subRecord.plan.name,
               planType: subRecord.billing_period === "mensal" ? "monthly" : "yearly",
-              planPrice: subRecord.plan.price,
+              planPrice: planPrice,
               subscriptionId: subRecord.id,
               subscriptionStartDate: startedAt.toISOString(),
               subscriptionEndDate: expiresAt.toISOString(),
