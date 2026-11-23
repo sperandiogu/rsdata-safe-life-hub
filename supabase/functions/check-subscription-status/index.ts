@@ -97,14 +97,27 @@ Deno.serve(async (req: Request) => {
       let expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30);
 
-      await supabase
+      // Only the caller that flips the row to active sends the emails and the Make lead;
+      // the webhook can be activating the same subscription at the same moment.
+      const { data: claimed, error: claimError } = await supabase
         .from("subscriptions")
         .update({
           status: "active",
           started_at: startedAt.toISOString(),
           expires_at: expiresAt.toISOString(),
         })
-        .eq("id", subRecord.id);
+        .eq("id", subRecord.id)
+        .neq("status", "active")
+        .select("id");
+
+      if (claimError) throw claimError;
+
+      if (!claimed?.length) {
+        return new Response(
+          JSON.stringify({ message: "Subscription already active", status: "active" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
 
       const { data: addressData } = await supabase
         .from("addresses")

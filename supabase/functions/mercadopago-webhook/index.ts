@@ -88,15 +88,24 @@ async function processSubscriptionEvent(
         expiresAt.setDate(expiresAt.getDate() + 30);
       }
 
-      await supabase
+      // Mercado Pago repeats preapproval notifications, and the payment branch or
+      // check-subscription-status may have activated this already. Only the caller that
+      // flips the row to active sends the emails and the Make lead.
+      const { data: claimed, error: claimError } = await supabase
         .from("subscriptions")
         .update({
           status: "active",
           started_at: startedAt.toISOString(),
           expires_at: expiresAt.toISOString(),
         })
-        .eq("id", subRecord.id);
+        .eq("id", subRecord.id)
+        .neq("status", "active")
+        .select("id");
 
+      // Throwing answers 500, so Mercado Pago retries instead of the notification being lost.
+      if (claimError) throw claimError;
+
+      // Runs even when already active: check-subscription-status activates without touching payments.
       // Update pending payments for this subscription to approved
       const { error: paymentUpdateError } = await supabase
         .from("payments")
@@ -113,6 +122,11 @@ async function processSubscriptionEvent(
         console.error("Error updating payment status:", paymentUpdateError);
       } else {
         console.log("Pending payments updated to approved for subscription:", subRecord.id);
+      }
+
+      if (!claimed?.length) {
+        console.log("Subscription already active, skipping notifications:", subRecord.id);
+        return;
       }
 
       console.log("Subscription activated successfully");
@@ -513,20 +527,32 @@ Deno.serve(async (req: Request) => {
               expiresAt.setFullYear(expiresAt.getFullYear() + 1);
             }
 
-            const { error: subscriptionError } = await supabase
+            // Mercado Pago sends several notifications per payment (and one per monthly charge),
+            // and process-card-payment already activates approved card payments. Only the
+            // caller that flips the row to active sends the emails and the Make lead.
+            const { data: claimed, error: subscriptionError } = await supabase
               .from("subscriptions")
               .update({
                 status: 'active',
                 started_at: startedAt.toISOString(),
                 expires_at: expiresAt.toISOString(),
               })
-              .eq("id", paymentRecord.subscription.id);
+              .eq("id", paymentRecord.subscription.id)
+              .neq("status", "active")
+              .select("id");
 
-            if (subscriptionError) {
-              console.error("Error activating subscription:", subscriptionError);
-            } else {
-              console.log("Subscription activated successfully");
+            // Throwing answers 500, so Mercado Pago retries instead of the notification being lost.
+            if (subscriptionError) throw subscriptionError;
+
+            if (!claimed?.length) {
+              console.log("Subscription already active, skipping notifications:", paymentRecord.subscription.id);
+              return new Response(JSON.stringify({ received: true }), {
+                status: 200,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              });
             }
+
+            console.log("Subscription activated successfully");
 
             const { data: addressData } = await supabase
               .from("addresses")

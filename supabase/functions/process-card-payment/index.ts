@@ -199,7 +199,9 @@ Deno.serve(async (req: Request) => {
             if (payments && payments.length > 0) {
               const paymentRecord = payments[0];
 
-              if (paymentRecord.subscription) {
+              // ponytail: read-then-write, so a webhook landing in the ~100ms between this read and
+              // the PATCH below can still double-send; claim with status=neq.active if that shows up.
+              if (paymentRecord.subscription && paymentRecord.subscription.status !== "active") {
                 const startedAt = new Date();
                 let expiresAt = new Date();
 
