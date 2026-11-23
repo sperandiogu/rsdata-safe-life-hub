@@ -122,9 +122,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const supabaseUrlEnv = Deno.env.get("SUPABASE_URL");
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-    if (supabaseUrlEnv && supabaseAnonKey) {
+    if (supabaseUrlEnv && supabaseServiceKey) {
       try {
         const emailHtml = `
 <!DOCTYPE html>
@@ -177,7 +176,7 @@ Obrigado por escolher a RSData!
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseAnonKey}`,
+            "Authorization": `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify({
             action: "send_raw",
@@ -238,7 +237,7 @@ Nota: A primeira cobrança será processada em aproximadamente 1 hora.
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseAnonKey}`,
+            "Authorization": `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify({
             action: "send_raw",

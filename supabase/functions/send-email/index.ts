@@ -682,9 +682,18 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // Only our own edge functions call this, with the service role key. Without the check anyone
+  // with the URL could send any email from loja@rsdata.com.br through Postmark (send_raw).
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseServiceKey || req.headers.get("Authorization") !== `Bearer ${supabaseServiceKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+    });
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const payload = await req.json();
